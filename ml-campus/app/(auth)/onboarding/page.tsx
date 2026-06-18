@@ -7,6 +7,7 @@ type Goal = 'breadth' | 'depth' | 'career';
 
 interface Profile {
   name: string;
+  email: string;
   background: string;
   goals: Goal[];
 }
@@ -25,7 +26,7 @@ const GOAL_OPTIONS: { value: Goal; label: string; desc: string }[] = [
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [profile, setProfile] = useState<Profile>({ name: '', background: '', goals: [] });
+  const [profile, setProfile] = useState<Profile>({ name: '', email: '', background: '', goals: [] });
   const [answers, setAnswers] = useState<DiagnosticAnswer[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState('');
   const [currentAnswer, setCurrentAnswer] = useState('');
@@ -257,8 +258,8 @@ export default function OnboardingPage() {
               <label className="block text-sm font-medium text-gray-300 mb-1.5">Email</label>
               <input
                 type="email"
-                value={profile.background}
-                onChange={(e) => setProfile((p) => ({ ...p, background: e.target.value }))}
+                value={profile.email}
+                onChange={(e) => setProfile((p) => ({ ...p, email: e.target.value }))}
                 className="w-full bg-gray-800 border border-gray-600 text-gray-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="you@example.com"
               />
@@ -276,7 +277,7 @@ export default function OnboardingPage() {
             {error && <p className="text-red-400 text-sm">{error}</p>}
             <button
               onClick={createAccount}
-              disabled={submitting || !password.trim()}
+              disabled={submitting || !password.trim() || !profile.email.trim()}
               className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white rounded-xl font-semibold text-sm transition-colors"
             >
               {submitting ? 'Creating account…' : 'Launch My Degree →'}

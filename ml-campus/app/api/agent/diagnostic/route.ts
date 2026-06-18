@@ -12,7 +12,13 @@ interface DiagnosticAnswer {
 }
 
 export async function POST(req: NextRequest) {
-  const { studentProfile, answers = [] }: { studentProfile: { name: string; background: string; goals: string[] }; answers: DiagnosticAnswer[] } = await req.json();
+  const body = await req.json();
+  const studentProfile: { name: string; background: string; goals: string[] } =
+    body.studentProfile ?? body.profile ?? { name: 'Student', background: '', goals: [] };
+  const answers: DiagnosticAnswer[] = body.answers ?? [];
+  studentProfile.name = studentProfile.name ?? 'Student';
+  studentProfile.background = studentProfile.background ?? '';
+  studentProfile.goals = studentProfile.goals ?? [];
 
   const allNodes = mitCurriculum.courses.flatMap(c => c.nodes.map(n => ({ id: n.id, title: n.title, courseId: c.id })));
 
