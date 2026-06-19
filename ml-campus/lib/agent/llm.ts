@@ -47,12 +47,23 @@ function flattenConversation(messages: LLMMessage[]): string {
 
 /** Run the `claude` CLI in print mode and return the full text response. */
 function claudeCli(opts: LLMOptions): Promise<string> {
-  const prompt = flattenConversation(opts.messages);
+  // Put the system prompt and conversation into a single stdin payload so we
+  // never pass large/quoted text as shell arguments (fragile, esp. on Windows).
+  const payload =
+    (opts.system ? `System instructions:\n${opts.system}\n\n---\n\n` : '') +
+    flattenConversation(opts.messages);
+
+  // Only simple, shell-safe flags go on the command line.
   const args = ['-p', '--model', cliModel(opts.model)];
-  if (opts.system) args.push('--append-system-prompt', opts.system);
+
+  const isWindows = process.platform === 'win32';
 
   return new Promise((resolve, reject) => {
-    const child = spawn('claude', args, { stdio: ['pipe', 'pipe', 'pipe'] });
+    const child = spawn('claude', args, {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      // On Windows `claude` is a .cmd shim that must run through a shell.
+      shell: isWindows,
+    });
     let out = '';
     let err = '';
     child.stdout.on('data', (d) => (out += d.toString()));
@@ -60,10 +71,15 @@ function claudeCli(opts: LLMOptions): Promise<string> {
     child.on('error', (e) =>
       reject(new Error(`Failed to spawn 'claude' CLI: ${e.message}. Is Claude Code installed and on PATH?`))
     );
-    child.on('close', (code) =>
-      code === 0 ? resolve(out.trim()) : reject(new Error(err.trim() || `claude exited with code ${code}`))
-    );
-    child.stdin.write(prompt);
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve(out.trim());
+      } else {
+        const detail = [err.trim(), out.trim()].filter(Boolean).join(' | ');
+        reject(new Error(`claude exited with code ${code}${detail ? `: ${detail}` : ' (no output)'}`));
+      }
+    });
+    child.stdin.write(payload);
     child.stdin.end();
   });
 }
