@@ -58,11 +58,19 @@ function claudeCli(opts: LLMOptions): Promise<string> {
 
   const isWindows = process.platform === 'win32';
 
+  // Strip ANTHROPIC_API_KEY from the child env. Otherwise the CLI treats it as
+  // an "external API key" and fails on an invalid/placeholder value instead of
+  // falling back to the logged-in Claude Code subscription auth.
+  const childEnv = { ...process.env };
+  delete childEnv.ANTHROPIC_API_KEY;
+  delete childEnv.ANTHROPIC_AUTH_TOKEN;
+
   return new Promise((resolve, reject) => {
     const child = spawn('claude', args, {
       stdio: ['pipe', 'pipe', 'pipe'],
       // On Windows `claude` is a .cmd shim that must run through a shell.
       shell: isWindows,
+      env: childEnv,
     });
     let out = '';
     let err = '';
