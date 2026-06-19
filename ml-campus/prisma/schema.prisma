@@ -1,0 +1,96 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Student {
+  id                 String              @id @default(cuid())
+  name               String
+  email              String              @unique
+  emailVerified      DateTime?
+  image              String?
+  password           String?
+  background         String?
+  goals              String?
+  learningStyle      String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  onboardingComplete Boolean             @default(false)
+  accounts           Account[]
+  sessions           AuthSession[]
+  knowledgeStates    KnowledgeState[]
+  checkpointResults  CheckpointResult[]
+  learningSessions   LearningSession[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  student           Student @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model AuthSession {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  student      Student  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model KnowledgeState {
+  id        String   @id @default(cuid())
+  studentId String
+  nodeId    String
+  level     Int      @default(0)
+  updatedAt DateTime @updatedAt
+  student   Student  @relation(fields: [studentId], references: [id])
+
+  @@unique([studentId, nodeId])
+}
+
+model CheckpointResult {
+  id                  String   @id @default(cuid())
+  studentId           String
+  checkpointId        String
+  response            String
+  passed              Boolean
+  agentFeedback       String?
+  requiresHumanReview Boolean  @default(false)
+  submittedAt         DateTime @default(now())
+  student             Student  @relation(fields: [studentId], references: [id])
+}
+
+model LearningSession {
+  id               String    @id @default(cuid())
+  studentId        String
+  nodeId           String
+  transcript       String
+  knowledgeUpdates String?
+  startedAt        DateTime  @default(now())
+  endedAt          DateTime?
+  student          Student   @relation(fields: [studentId], references: [id])
+}
