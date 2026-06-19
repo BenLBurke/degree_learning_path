@@ -2,12 +2,10 @@ import { NextRequest } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../auth';
 import { prisma } from '../../../../lib/db/prisma';
-import Anthropic from '@anthropic-ai/sdk';
 import { buildSystemPrompt } from '../../../../lib/agent/systemPrompt';
 import { parseKnowledgeUpdates } from '../../../../lib/agent/knowledgeAssessor';
 import { getNodeById } from '../../../../lib/agent/pathfinder';
-
-const anthropic = new Anthropic();
+import { streamText } from '../../../../lib/agent/llm';
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -40,24 +38,24 @@ export async function POST(req: NextRequest) {
     mode: mode as any,
   });
 
-  const stream = await anthropic.messages.stream({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1500,
-    system: systemPrompt,
-    messages: messages.map((m: any) => ({ role: m.role, content: m.content })),
-  });
-
   const encoder = new TextEncoder();
   let fullResponse = '';
 
   const readable = new ReadableStream({
     async start(controller) {
-      for await (const chunk of stream) {
-        if (chunk.type === 'content_block_delta' && chunk.delta.type === 'text_delta') {
-          const text = chunk.delta.text;
+      try {
+        for await (const text of streamText({
+          system: systemPrompt,
+          messages: messages.map((m: any) => ({ role: m.role, content: m.content })),
+          maxTokens: 1500,
+        })) {
           fullResponse += text;
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
         }
+      } catch (err: any) {
+        controller.enqueue(
+          encoder.encode(`data: ${JSON.stringify({ text: `\n\n[Error: ${err?.message ?? 'agent failed'}]` })}\n\n`)
+        );
       }
 
       // Parse knowledge updates and save them

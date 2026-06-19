@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
 import { mitCurriculum } from '../../../../lib/degree/mitCurriculum';
 import { parseKnowledgeUpdates } from '../../../../lib/agent/knowledgeAssessor';
-
-const anthropic = new Anthropic();
+import { completeText } from '../../../../lib/agent/llm';
 
 interface DiagnosticAnswer {
   question: string;
@@ -12,6 +10,18 @@ interface DiagnosticAnswer {
 }
 
 export async function POST(req: NextRequest) {
+  try {
+    return await handle(req);
+  } catch (err: any) {
+    console.error('[diagnostic] error:', err?.message ?? err);
+    return NextResponse.json(
+      { error: err?.message ?? 'Diagnostic failed' },
+      { status: 500 }
+    );
+  }
+}
+
+async function handle(req: NextRequest) {
   const body = await req.json();
   const studentProfile: { name: string; background: string; goals: string[] } =
     body.studentProfile ?? body.profile ?? { name: 'Student', background: '', goals: [] };
@@ -40,13 +50,10 @@ where level is 0=unknown, 1=aware, 2=familiar, 3=proficient, 4=mastered.
 
 Be generous - if a student shows familiarity with prerequisites, mark those as familiar too.`;
 
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
+    const content = await completeText({
       messages: [{ role: 'user', content: finalPrompt }],
+      maxTokens: 1000,
     });
-
-    const content = message.content[0].type === 'text' ? message.content[0].text : '';
     const knowledgeState = parseKnowledgeUpdates(content);
 
     return NextResponse.json({ complete: true, knowledgeState });
@@ -72,13 +79,10 @@ This is question ${questionNumber} of 10. Ask a diagnostic question to assess th
 
 Ask a specific, testable question. Just output the question directly, no preamble.`;
 
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 300,
+  const question = await completeText({
     messages: [{ role: 'user', content: prompt }],
+    maxTokens: 300,
   });
-
-  const question = message.content[0].type === 'text' ? message.content[0].text : '';
 
   return NextResponse.json({ question, questionNumber, totalQuestions: 10 });
 }

@@ -2,10 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../../../auth';
 import { prisma } from '../../../../lib/db/prisma';
-import Anthropic from '@anthropic-ai/sdk';
 import { mitCurriculum } from '../../../../lib/degree/mitCurriculum';
-
-const anthropic = new Anthropic();
+import { completeText } from '../../../../lib/agent/llm';
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -37,13 +35,10 @@ Assess whether the student has met the passing criteria. Respond with:
 
 Then provide 2-3 sentences of constructive feedback.`;
 
-  const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 500,
+  const content = await completeText({
     messages: [{ role: 'user', content: assessmentPrompt }],
+    maxTokens: 500,
   });
-
-  const content = message.content[0].type === 'text' ? message.content[0].text : '';
   const passed = content.includes('[CHECKPOINT_RESULT: passed=true]');
   const feedback = content.replace(/\[CHECKPOINT_RESULT: passed=(true|false)\]/g, '').trim();
 
