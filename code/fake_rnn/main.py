@@ -96,19 +96,7 @@ def run_demo(source: str, seed: str | None, order: int, temperature: float):
     chosen_seed = seed or random.choice(sample_seeds)
     print(f"  Seed    : \"{chosen_seed}\"")
     print()
-    output = rnn.generate(seed=chosen_seed, max_words=80)
-    # word-wrap at 64 chars
-    words = output.split()
-    line, lines = [], []
-    for w in words:
-        if len(" ".join(line + [w])) > 64:
-            lines.append("  " + " ".join(line))
-            line = [w]
-        else:
-            line.append(w)
-    if line:
-        lines.append("  " + " ".join(line))
-    print("\n".join(lines))
+    output = rnn.generate(seed=chosen_seed, max_words=80, stream=True)
 
     # ── Cross-source chaos ───────────────────────────────────────────
     if source == "all":
@@ -121,9 +109,9 @@ def run_demo(source: str, seed: str | None, order: int, temperature: float):
             "elementary my dear squidward",
         ]
         for ms in mashup_seeds[:3]:
-            out = rnn.generate(seed=ms, max_words=30)
             print(f"  \"{ms}\"")
-            print(f"    → {out}")
+            print(f"  → ", end="", flush=True)
+            rnn.generate(seed=ms, max_words=30, stream=True)
             print()
 
     print('─' * 64)

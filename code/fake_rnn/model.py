@@ -91,13 +91,16 @@ class FakeRNN:
         probs = [s / total for s in scaled]
         return random.choices(words, weights=probs, k=1)[0]
 
-    def generate(self, seed: str | None = None, max_words: int = 60) -> str:
+    def generate(self, seed: str | None = None, max_words: int = 60,
+                 stream: bool = False, delay: float = 0.12) -> str:
         """
         Run the forward pass to generate a sequence of words.
 
         The hidden state is updated at each time step, just like a real RNN
         except completely different in every technical respect.
         """
+        import time, sys
+
         self._check_trained()
 
         if seed:
@@ -108,12 +111,26 @@ class FakeRNN:
 
         self._hidden_state = tuple(tokens[-self.order :])
 
+        if stream:
+            print("  " + self._detokenize(tokens), end="", flush=True)
+
         for _ in range(max_words):
             next_word = self.predict_next(list(self._hidden_state))
             tokens.append(next_word)
             self._hidden_state = tuple(tokens[-self.order :])
+
+            if stream:
+                # reprint the whole growing sentence on the same line
+                sentence = self._detokenize(tokens)
+                sys.stdout.write("\r  " + sentence + "   ")
+                sys.stdout.flush()
+                time.sleep(delay)
+
             if next_word in {".", "!", "?"} and len(tokens) > 10:
                 break
+
+        if stream:
+            print()  # newline after streaming finishes
 
         return self._detokenize(tokens)
 
