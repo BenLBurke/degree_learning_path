@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../../lib/db/prisma';
 import { mitCurriculum } from '../../../lib/degree/mitCurriculum';
+import { adminEmails } from '../../../lib/auth/roles';
 
 export async function POST(req: NextRequest) {
-  const { name, email, password, background, goals, knowledgeState } = await req.json();
+  const { name, email, password, background, goals, knowledgeState, role } = await req.json();
 
   if (!email || !password || !name) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -17,12 +18,19 @@ export async function POST(req: NextRequest) {
 
   const hashedPassword = await bcrypt.hash(password, 12);
 
+  // Only honor a professor role request if the email is on the allowlist —
+  // roles can never be self-granted from the client.
+  const requestedProfessor = role === 'professor' || role === 'admin';
+  const onAllowlist = adminEmails().includes((email as string).toLowerCase());
+  const resolvedRole = requestedProfessor && onAllowlist ? 'professor' : 'student';
+
   const student = await prisma.student.create({
     data: {
       name,
       email,
       password: hashedPassword,
       background,
+      role: resolvedRole,
       goals: JSON.stringify(goals || []),
       onboardingComplete: true,
     },

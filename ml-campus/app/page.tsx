@@ -38,19 +38,52 @@ export default function Home() {
           ML degree graph, and finds your path — not a fixed syllabus, but a personalized
           route to mastery.
         </p>
-        <div className="flex items-center justify-center gap-4 mt-10">
-          <Link
-            href="/onboarding"
-            className="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-xl font-semibold transition-colors"
-          >
-            Start Your Degree →
-          </Link>
-          <Link
-            href="/login"
-            className="border border-gray-700 hover:border-gray-500 px-6 py-3 rounded-xl font-semibold transition-colors"
-          >
-            Sign In
-          </Link>
+
+        {/* Role paths */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-12 max-w-2xl mx-auto text-left">
+          {/* Student */}
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col">
+            <h3 className="text-lg font-semibold text-white">Students</h3>
+            <p className="text-sm text-gray-400 mt-1 flex-1">
+              Start with a quick diagnostic, then navigate your personalized path.
+            </p>
+            <div className="flex flex-col gap-2 mt-5">
+              <Link
+                href="/onboarding"
+                className="bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 rounded-xl font-semibold text-sm text-center transition-colors"
+              >
+                New student — start diagnostic →
+              </Link>
+              <Link
+                href="/login"
+                className="border border-gray-700 hover:border-gray-500 px-4 py-2.5 rounded-xl font-medium text-sm text-center transition-colors"
+              >
+                Returning student — sign in
+              </Link>
+            </div>
+          </div>
+
+          {/* Professor */}
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col">
+            <h3 className="text-lg font-semibold text-white">Professors</h3>
+            <p className="text-sm text-gray-400 mt-1 flex-1">
+              Review checkpoint submissions and track your roster. No diagnostic.
+            </p>
+            <div className="flex flex-col gap-2 mt-5">
+              <Link
+                href="/login?role=professor"
+                className="bg-gray-100 hover:bg-white text-gray-900 px-4 py-2.5 rounded-xl font-semibold text-sm text-center transition-colors"
+              >
+                Professor sign in →
+              </Link>
+              <Link
+                href="/signup?role=professor"
+                className="border border-gray-700 hover:border-gray-500 px-4 py-2.5 rounded-xl font-medium text-sm text-center transition-colors"
+              >
+                Create professor account
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
