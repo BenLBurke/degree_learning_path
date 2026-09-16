@@ -5,6 +5,18 @@ import { mitCurriculum } from '../../../lib/degree/mitCurriculum';
 import { adminEmails } from '../../../lib/auth/roles';
 
 export async function POST(req: NextRequest) {
+  try {
+    return await handle(req);
+  } catch (err: any) {
+    console.error('[register] error:', err?.message ?? err);
+    return NextResponse.json(
+      { error: err?.message ?? 'Registration failed' },
+      { status: 500 }
+    );
+  }
+}
+
+async function handle(req: NextRequest) {
   const { name, email, password, background, goals, knowledgeState, role } = await req.json();
 
   if (!email || !password || !name) {
