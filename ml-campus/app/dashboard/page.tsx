@@ -6,6 +6,8 @@ import { getAllNodes, getNextRecommendedNodes } from '@/lib/agent/pathfinder';
 import { mitCurriculum } from '@/lib/degree/mitCurriculum';
 import DegreeGraphClient from './DegreeGraphClient';
 import CopilotSidecarWrapper from '@/components/CopilotSidecarWrapper';
+import { getCurrentProfessor } from '@/lib/auth/roles';
+import Link from 'next/link';
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -19,6 +21,8 @@ export default async function DashboardPage() {
   ]);
 
   if (!student) redirect('/login');
+
+  const professor = await getCurrentProfessor();
 
   const knowledgeState: Record<string, number> = {};
   knowledgeStates.forEach((ks) => { knowledgeState[ks.nodeId] = ks.level; });
@@ -49,6 +53,14 @@ export default async function DashboardPage() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-gray-400">{student.name}</span>
+          {professor && (
+            <Link
+              href="/admin"
+              className="text-sm text-indigo-400 hover:text-indigo-300 font-medium"
+            >
+              Professor Portal
+            </Link>
+          )}
           <a href="/api/auth/signout" className="text-sm text-gray-500 hover:text-gray-300">
             Sign out
           </a>

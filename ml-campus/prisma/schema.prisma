@@ -11,6 +11,7 @@ model Student {
   id                 String              @id @default(cuid())
   name               String
   email              String              @unique
+  role               String              @default("student")
   emailVerified      DateTime?
   image              String?
   password           String?
