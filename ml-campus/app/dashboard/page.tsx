@@ -69,9 +69,14 @@ export default async function DashboardPage({
           )}
           <span className="text-sm text-gray-400">{session.user.name}</span>
           {professor && (
-            <Link href="/admin" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">
-              Professor Portal
-            </Link>
+            <>
+              <Link href="/admin" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">
+                Review Queue
+              </Link>
+              <Link href="/admin/roster" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">
+                Roster
+              </Link>
+            </>
           )}
           <a href="/api/auth/signout" className="text-sm text-gray-500 hover:text-gray-300">
             Sign out
