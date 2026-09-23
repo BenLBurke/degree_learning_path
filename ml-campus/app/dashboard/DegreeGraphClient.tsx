@@ -6,9 +6,9 @@ const DegreeGraph = dynamic(() => import('@/components/DegreeGraph'), { ssr: fal
 
 interface Props {
   knowledgeState: Record<string, number>;
-  checkpointResults: Array<{ checkpointId: string; passed: boolean; requiresHumanReview?: boolean }>;
+  readOnly?: boolean;
 }
 
-export default function DegreeGraphClient({ knowledgeState, checkpointResults }: Props) {
-  return <DegreeGraph knowledgeState={knowledgeState} checkpointResults={checkpointResults} />;
+export default function DegreeGraphClient({ knowledgeState, readOnly }: Props) {
+  return <DegreeGraph knowledgeState={knowledgeState} readOnly={readOnly} />;
 }

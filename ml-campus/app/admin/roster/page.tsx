@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db/prisma';
 import { getAllNodes } from '@/lib/agent/pathfinder';
+import Link from 'next/link';
 
 export default async function RosterPage() {
   const [students, allKnowledge, allCheckpoints] = await Promise.all([
@@ -51,8 +52,10 @@ export default async function RosterPage() {
               return (
                 <tr key={s.id} className="border-b border-gray-800/50 last:border-0 hover:bg-gray-800/30">
                   <td className="px-5 py-3">
-                    <div className="text-gray-200 font-medium">{s.name}</div>
-                    <div className="text-gray-600 text-xs">{s.email}</div>
+                    <Link href={`/dashboard?studentId=${s.id}`} className="group block">
+                      <div className="text-gray-200 font-medium group-hover:text-indigo-300">{s.name}</div>
+                      <div className="text-gray-600 text-xs">{s.email}</div>
+                    </Link>
                   </td>
                   <td className="px-5 py-3">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${
