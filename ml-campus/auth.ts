@@ -5,6 +5,9 @@ import { prisma } from './lib/db/prisma';
 import bcrypt from 'bcryptjs';
 
 export const authOptions: NextAuthOptions = {
+  // Fixed fallback secret so demo sessions survive server restarts without any
+  // env setup. Override with NEXTAUTH_SECRET in production.
+  secret: process.env.NEXTAUTH_SECRET ?? 'ml-campus-demo-secret-do-not-use-in-production',
   adapter: PrismaAdapter(prisma) as any,
   providers: [
     CredentialsProvider({
