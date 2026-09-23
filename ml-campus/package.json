@@ -9,7 +9,10 @@
     "lint": "next lint",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "ts-node prisma/seed.ts",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:setup": "prisma db push && prisma generate",
+    "create-professor": "node scripts/create-professor.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.2",
