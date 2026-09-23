@@ -12,7 +12,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:setup": "prisma db push && prisma generate",
-    "create-professor": "node scripts/create-professor.mjs"
+    "create-professor": "node scripts/create-professor.mjs",
+    "seed-admin": "node scripts/create-professor.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.104.2",

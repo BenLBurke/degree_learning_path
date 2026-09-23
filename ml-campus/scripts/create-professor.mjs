@@ -1,10 +1,10 @@
 // Create (or update) a professor account directly in the database.
 //
 // Usage (from the ml-campus/ directory):
-//   node scripts/create-professor.mjs <email> <password> [name]
+//   node scripts/create-professor.mjs [email] [password] [name]
 //
-// Example:
-//   node scripts/create-professor.mjs benleeburke@gmail.com hunter2 "Ben Burke"
+// With no arguments it creates the default admin account:
+//   admin@byui.edu / admin
 //
 // This bypasses the signup UI and the diagnostic entirely. It sets role
 // "professor" on the record, so portal access works regardless of the
@@ -22,14 +22,10 @@ config({ path: '.env' });
 
 const [, , emailArg, passwordArg, ...nameParts] = process.argv;
 
-if (!emailArg || !passwordArg) {
-  console.error('Usage: node scripts/create-professor.mjs <email> <password> [name]');
-  process.exit(1);
-}
-
-const email = emailArg.toLowerCase();
-const password = passwordArg;
-const name = nameParts.join(' ') || 'Professor';
+// Default to the built-in admin account when no args are given.
+const email = (emailArg ?? 'admin@byui.edu').toLowerCase();
+const password = passwordArg ?? 'admin';
+const name = nameParts.join(' ') || (emailArg ? 'Professor' : 'Admin');
 
 // Mirror the URL handling in lib/db/prisma.ts.
 const rawUrl = process.env.DATABASE_URL ?? 'file:./dev.db';
