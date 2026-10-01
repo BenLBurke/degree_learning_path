@@ -68,15 +68,18 @@ export default async function DashboardPage({
             />
           )}
           <span className="text-sm text-gray-400">{session.user.name}</span>
+          {!isViewingOther && (
+            <Link href="/checkpoints" className="text-sm text-gray-400 hover:text-white transition-colors">
+              My Checkpoints
+            </Link>
+          )}
           {professor && (
-            <>
-              <Link href="/admin" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">
-                Review Queue
-              </Link>
-              <Link href="/admin/roster" className="text-sm text-indigo-400 hover:text-indigo-300 font-medium">
-                Roster
-              </Link>
-            </>
+            <Link
+              href="/admin"
+              className="text-sm bg-indigo-600/20 border border-indigo-700 text-indigo-200 hover:bg-indigo-600/30 px-3 py-1.5 rounded-lg font-medium transition-colors"
+            >
+              Professor Portal →
+            </Link>
           )}
           <a href="/api/auth/signout" className="text-sm text-gray-500 hover:text-gray-300">
             Sign out

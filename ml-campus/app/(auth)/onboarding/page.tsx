@@ -2,6 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  DIAGNOSTIC_QUESTIONS,
+  DIAGNOSTIC_OPTIONS,
+  buildKnowledgeStateFromAnswers,
+} from '@/lib/degree/diagnostic';
 
 type Goal = 'breadth' | 'depth' | 'career';
 
@@ -12,25 +17,20 @@ interface Profile {
   goals: Goal[];
 }
 
-interface DiagnosticAnswer {
-  question: string;
-  answer: string;
-}
-
 const GOAL_OPTIONS: { value: Goal; label: string; desc: string }[] = [
   { value: 'breadth', label: 'Broad Overview', desc: 'Cover the full ML landscape' },
   { value: 'depth', label: 'Deep Mastery', desc: 'Go deep in specific areas' },
   { value: 'career', label: 'Career-Ready', desc: 'Focus on industry-valued skills' },
 ];
 
+const TOTAL_QUESTIONS = DIAGNOSTIC_QUESTIONS.length;
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [profile, setProfile] = useState<Profile>({ name: '', email: '', background: '', goals: [] });
-  const [answers, setAnswers] = useState<DiagnosticAnswer[]>([]);
-  const [currentQuestion, setCurrentQuestion] = useState('');
-  const [currentAnswer, setCurrentAnswer] = useState('');
-  const [loadingQuestion, setLoadingQuestion] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [answers, setAnswers] = useState<number[]>([]);
   const [knowledgeState, setKnowledgeState] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -43,53 +43,29 @@ export default function OnboardingPage() {
     }));
   }
 
-  async function startDiagnostic() {
+  function startDiagnostic() {
+    setCurrentIndex(0);
+    setAnswers([]);
     setStep(2);
-    setLoadingQuestion(true);
-    try {
-      const res = await fetch('/api/agent/diagnostic', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile, answers: [] }),
-      });
-      const data = await res.json();
-      if (data.complete) {
-        setKnowledgeState(data.knowledgeState);
-        setStep(3);
-      } else {
-        setCurrentQuestion(data.question);
-      }
-    } catch {
-      setError('Failed to load diagnostic. Please try again.');
-    } finally {
-      setLoadingQuestion(false);
+  }
+
+  // Record the chosen level for the current question and advance. Hard-capped
+  // at TOTAL_QUESTIONS — once the last question is answered we go to the summary.
+  function selectOption(level: number) {
+    const updated = [...answers];
+    updated[currentIndex] = level;
+    setAnswers(updated);
+
+    if (currentIndex >= TOTAL_QUESTIONS - 1) {
+      setKnowledgeState(buildKnowledgeStateFromAnswers(updated));
+      setStep(3);
+    } else {
+      setCurrentIndex(currentIndex + 1);
     }
   }
 
-  async function submitAnswer() {
-    if (!currentAnswer.trim()) return;
-    const newAnswers = [...answers, { question: currentQuestion, answer: currentAnswer }];
-    setAnswers(newAnswers);
-    setCurrentAnswer('');
-    setLoadingQuestion(true);
-    try {
-      const res = await fetch('/api/agent/diagnostic', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile, answers: newAnswers }),
-      });
-      const data = await res.json();
-      if (data.complete) {
-        setKnowledgeState(data.knowledgeState);
-        setStep(3);
-      } else {
-        setCurrentQuestion(data.question);
-      }
-    } catch {
-      setError('Failed to submit answer.');
-    } finally {
-      setLoadingQuestion(false);
-    }
+  function goBack() {
+    if (currentIndex > 0) setCurrentIndex(currentIndex - 1);
   }
 
   async function createAccount() {
@@ -182,53 +158,51 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* Step 2: Diagnostic */}
+        {/* Step 2: Diagnostic (static, 10 self-assessment questions) */}
         {step === 2 && (
           <div className="bg-gray-900 border border-gray-700 rounded-2xl p-8 space-y-6">
             <div>
               <h2 className="text-2xl font-bold text-white">Knowledge Diagnostic</h2>
               <p className="text-gray-400 text-sm mt-1">
-                Question {answers.length + 1} of 10 — answer honestly, your guide adapts to what you actually know.
+                Question {currentIndex + 1} of {TOTAL_QUESTIONS} · {DIAGNOSTIC_QUESTIONS[currentIndex].topic} —
+                answer honestly so we can map your starting point.
               </p>
             </div>
 
-            {/* Prior Q&A */}
-            {answers.length > 0 && (
-              <div className="max-h-48 overflow-y-auto space-y-3">
-                {answers.map((a, i) => (
-                  <div key={i} className="space-y-1">
-                    <p className="text-xs text-gray-500">Q{i + 1}: {a.question}</p>
-                    <p className="text-xs text-gray-400 bg-gray-800 rounded-lg px-3 py-2">{a.answer}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {loadingQuestion ? (
-              <div className="text-center py-8 text-gray-500">
-                <div className="animate-spin w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full mx-auto mb-3" />
-                Preparing next question…
-              </div>
-            ) : (
-              <>
-                <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
-                  <p className="text-gray-100 text-sm leading-relaxed">{currentQuestion}</p>
-                </div>
-                <textarea
-                  value={currentAnswer}
-                  onChange={(e) => setCurrentAnswer(e.target.value)}
-                  rows={4}
-                  placeholder="Your answer…"
-                  className="w-full bg-gray-800 border border-gray-600 text-gray-100 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            {/* Progress dots */}
+            <div className="flex gap-1.5">
+              {DIAGNOSTIC_QUESTIONS.map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1 flex-1 rounded-full ${
+                    i < currentIndex ? 'bg-green-500' : i === currentIndex ? 'bg-indigo-500' : 'bg-gray-700'
+                  }`}
                 />
+              ))}
+            </div>
+
+            <div className="bg-gray-800 rounded-xl p-4 border border-gray-700">
+              <p className="text-gray-100 text-sm leading-relaxed">
+                How would you rate your knowledge of: <span className="font-medium">{DIAGNOSTIC_QUESTIONS[currentIndex].prompt}</span>
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              {DIAGNOSTIC_OPTIONS.map((opt) => (
                 <button
-                  onClick={submitAnswer}
-                  disabled={!currentAnswer.trim()}
-                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white rounded-xl font-semibold text-sm transition-colors"
+                  key={opt.level}
+                  onClick={() => selectOption(opt.level)}
+                  className="w-full text-left px-4 py-3 rounded-xl border border-gray-600 bg-gray-800 text-gray-200 hover:border-indigo-500 hover:bg-indigo-900/30 transition-all text-sm"
                 >
-                  {answers.length < 9 ? 'Next Question →' : 'Finish Diagnostic →'}
+                  {opt.label}
                 </button>
-              </>
+              ))}
+            </div>
+
+            {currentIndex > 0 && (
+              <button onClick={goBack} className="text-sm text-gray-500 hover:text-gray-300">
+                ← Previous question
+              </button>
             )}
           </div>
         )}

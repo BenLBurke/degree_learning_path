@@ -1,12 +1,14 @@
 import { prisma } from '@/lib/db/prisma';
 import { getAllNodes } from '@/lib/agent/pathfinder';
+import { pendingReviewByStudent } from '@/lib/admin/pending';
 import Link from 'next/link';
 
 export default async function RosterPage() {
-  const [students, allKnowledge, allCheckpoints] = await Promise.all([
+  const [students, allKnowledge, allCheckpoints, pendingByStudent] = await Promise.all([
     prisma.student.findMany({ orderBy: { createdAt: 'desc' } }),
     prisma.knowledgeState.findMany(),
     prisma.checkpointResult.findMany({ where: { passed: true } }),
+    pendingReviewByStudent(),
   ]);
 
   const totalNodes = getAllNodes().length;
@@ -53,7 +55,14 @@ export default async function RosterPage() {
                 <tr key={s.id} className="border-b border-gray-800/50 last:border-0 hover:bg-gray-800/30">
                   <td className="px-5 py-3">
                     <Link href={`/dashboard?studentId=${s.id}`} className="group block">
-                      <div className="text-gray-200 font-medium group-hover:text-indigo-300">{s.name}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-200 font-medium group-hover:text-indigo-300">{s.name}</span>
+                        {pendingByStudent[s.id] ? (
+                          <span className="text-[11px] font-semibold bg-red-600 text-white px-1.5 py-0.5 rounded-full">
+                            {pendingByStudent[s.id]} pending review
+                          </span>
+                        ) : null}
+                      </div>
                       <div className="text-gray-600 text-xs">{s.email}</div>
                     </Link>
                   </td>
