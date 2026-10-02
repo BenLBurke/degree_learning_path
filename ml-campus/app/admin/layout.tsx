@@ -1,13 +1,13 @@
 import { redirect } from 'next/navigation';
 import { getCurrentProfessor } from '@/lib/auth/roles';
-import { pendingReviewCount } from '@/lib/admin/pending';
+import { reviewQueueCount } from '@/lib/admin/pending';
 import AdminSidebar from '@/components/AdminSidebar';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const professor = await getCurrentProfessor();
   if (!professor) redirect('/dashboard');
 
-  const pending = await pendingReviewCount();
+  const pending = await reviewQueueCount();
 
   return (
     <div className="min-h-screen bg-gray-950 text-white flex">

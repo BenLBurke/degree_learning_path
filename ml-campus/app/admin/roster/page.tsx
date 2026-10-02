@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/db/prisma';
 import { getAllNodes } from '@/lib/agent/pathfinder';
-import { pendingReviewByStudent } from '@/lib/admin/pending';
+import { reviewQueueByStudent } from '@/lib/admin/pending';
 import Link from 'next/link';
 
 export default async function RosterPage() {
@@ -8,7 +8,7 @@ export default async function RosterPage() {
     prisma.student.findMany({ orderBy: { createdAt: 'desc' } }),
     prisma.knowledgeState.findMany(),
     prisma.checkpointResult.findMany({ where: { passed: true } }),
-    pendingReviewByStudent(),
+    reviewQueueByStudent(),
   ]);
 
   const totalNodes = getAllNodes().length;
@@ -65,7 +65,7 @@ export default async function RosterPage() {
                           className="text-[11px] font-semibold bg-red-600 hover:bg-red-500 text-white px-1.5 py-0.5 rounded-full shrink-0"
                           title="Go to review queue"
                         >
-                          {pendingByStudent[s.id]} pending review
+                          {pendingByStudent[s.id]} to review
                         </Link>
                       ) : null}
                     </div>
