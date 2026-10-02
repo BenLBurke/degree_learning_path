@@ -96,7 +96,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-lg">
         {/* Progress bar */}
         <div className="flex items-center justify-center gap-2 mb-6">
-          <img src="/byui-logo.png" alt="BYU-Idaho" width={32} height={32} />
+          <img src="/byui-logo.svg" alt="BYU-Idaho" width={32} height={32} />
           <span className="text-xl font-bold text-white">ML Campus</span>
         </div>
 

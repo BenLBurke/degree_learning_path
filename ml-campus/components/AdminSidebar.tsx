@@ -33,7 +33,7 @@ export default function AdminSidebar({ pendingCount, professorName }: AdminSideb
     <aside className="w-60 shrink-0 border-r border-gray-800 bg-gray-950 flex flex-col">
       <div className="px-5 py-5 border-b border-gray-800">
         <div className="flex items-center gap-2">
-          <img src="/byui-logo.png" alt="BYU-Idaho" width={28} height={28} />
+          <img src="/byui-logo.svg" alt="BYU-Idaho" width={28} height={28} />
           <span className="text-lg font-bold text-white">ML Campus</span>
         </div>
         <div className="text-xs text-indigo-400 font-medium mt-1">Professor Portal</div>
