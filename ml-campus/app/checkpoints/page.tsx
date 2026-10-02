@@ -19,9 +19,6 @@ export default async function CheckpointsPage({
   const viewerId = (session.user as any).id as string;
   const professor = await getCurrentProfessor();
 
-  const program = getProgram(searchParams.program);
-  const programCourseIds = new Set(program.courseIds);
-
   // A professor may inspect another student's checkpoints read-only via ?studentId.
   const targetId = professor && searchParams.studentId ? searchParams.studentId : viewerId;
   const isViewingOther = targetId !== viewerId;
@@ -31,6 +28,9 @@ export default async function CheckpointsPage({
     prisma.checkpointResult.findMany({ where: { studentId: targetId } }),
   ]);
   if (!student) redirect('/checkpoints');
+
+  const program = getProgram(searchParams.program ?? student.degree);
+  const programCourseIds = new Set(program.courseIds);
 
   const courses = checkpointsByCourse(results).filter((c) => programCourseIds.has(c.courseId));
   const all = courses.flatMap((c) => c.checkpoints);

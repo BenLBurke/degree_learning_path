@@ -7,6 +7,7 @@ import {
   DIAGNOSTIC_OPTIONS,
   buildKnowledgeStateFromAnswers,
 } from '@/lib/degree/diagnostic';
+import { PROGRAMS } from '@/lib/degree/programs';
 
 type Goal = 'breadth' | 'depth' | 'career';
 
@@ -15,6 +16,7 @@ interface Profile {
   email: string;
   background: string;
   goals: Goal[];
+  degree: string;
 }
 
 const GOAL_OPTIONS: { value: Goal; label: string; desc: string }[] = [
@@ -28,7 +30,7 @@ const TOTAL_QUESTIONS = DIAGNOSTIC_QUESTIONS.length;
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
-  const [profile, setProfile] = useState<Profile>({ name: '', email: '', background: '', goals: [] });
+  const [profile, setProfile] = useState<Profile>({ name: '', email: '', background: '', goals: [], degree: 'ml' });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [knowledgeState, setKnowledgeState] = useState<Record<string, number>>({});
@@ -128,6 +130,25 @@ export default function OnboardingPage() {
                 className="w-full bg-gray-800 border border-gray-600 text-gray-100 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="E.g. Software engineer with Python experience, studied stats in undergrad…"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-3">Choose your degree</label>
+              <div className="grid grid-cols-2 gap-2">
+                {PROGRAMS.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setProfile((prof) => ({ ...prof, degree: p.id }))}
+                    className={`text-left px-4 py-3 rounded-xl border transition-all ${
+                      profile.degree === p.id
+                        ? 'border-indigo-500 bg-indigo-900/40 text-indigo-200'
+                        : 'border-gray-600 bg-gray-800 text-gray-300 hover:border-gray-500'
+                    }`}
+                  >
+                    <div className="font-medium text-sm">{p.title}</div>
+                    <div className="text-xs opacity-70 mt-0.5">{p.description}</div>
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-3">Learning goals</label>

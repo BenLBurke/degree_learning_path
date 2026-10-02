@@ -1,25 +1,22 @@
 import { prisma } from '@/lib/db/prisma';
-import { getAllNodes } from '@/lib/agent/pathfinder';
 import { reviewQueueByStudent } from '@/lib/admin/pending';
+import { getProgram, programNodeIds } from '@/lib/degree/programs';
 import Link from 'next/link';
 
 export default async function RosterPage() {
   const [students, allKnowledge, allCheckpoints, pendingByStudent] = await Promise.all([
-    prisma.student.findMany({ orderBy: { createdAt: 'desc' } }),
+    prisma.student.findMany({ orderBy: [{ degree: 'asc' }, { name: 'asc' }] }),
     prisma.knowledgeState.findMany(),
     prisma.checkpointResult.findMany({ where: { passed: true } }),
     reviewQueueByStudent(),
   ]);
 
-  const totalNodes = getAllNodes().length;
-
-  const byStudent = new Map<string, { mastered: number; sum: number; count: number }>();
+  // knowledge level per student per node
+  const ksByStudent = new Map<string, Map<string, number>>();
   for (const ks of allKnowledge) {
-    const agg = byStudent.get(ks.studentId) ?? { mastered: 0, sum: 0, count: 0 };
-    agg.sum += ks.level;
-    agg.count += 1;
-    if (ks.level >= 4) agg.mastered += 1;
-    byStudent.set(ks.studentId, agg);
+    let m = ksByStudent.get(ks.studentId);
+    if (!m) { m = new Map(); ksByStudent.set(ks.studentId, m); }
+    m.set(ks.nodeId, ks.level);
   }
 
   const passedByStudent = new Map<string, number>();
@@ -31,7 +28,7 @@ export default async function RosterPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Student Roster</h1>
-        <p className="text-gray-400 text-sm mt-1">{students.length} enrolled</p>
+        <p className="text-gray-400 text-sm mt-1">{students.length} enrolled · progress shown within each student&apos;s degree</p>
       </div>
 
       <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
@@ -39,7 +36,7 @@ export default async function RosterPage() {
           <thead>
             <tr className="border-b border-gray-800 text-gray-500 text-xs uppercase tracking-wide">
               <th className="text-left px-5 py-3 font-medium">Student</th>
-              <th className="text-left px-5 py-3 font-medium">Role</th>
+              <th className="text-left px-5 py-3 font-medium">Degree</th>
               <th className="text-right px-5 py-3 font-medium">Mastered</th>
               <th className="text-right px-5 py-3 font-medium">Checkpoints Passed</th>
               <th className="text-right px-5 py-3 font-medium">Avg Level</th>
@@ -48,9 +45,19 @@ export default async function RosterPage() {
           </thead>
           <tbody>
             {students.map((s) => {
-              const agg = byStudent.get(s.id) ?? { mastered: 0, sum: 0, count: 0 };
-              const avg = agg.count > 0 ? (agg.sum / agg.count).toFixed(1) : '0.0';
-              const pct = Math.round((agg.mastered / totalNodes) * 100);
+              const degree = getProgram(s.degree);
+              const nodeIds = programNodeIds(s.degree);
+              const km = ksByStudent.get(s.id) ?? new Map<string, number>();
+              let sum = 0;
+              let mastered = 0;
+              for (const nid of nodeIds) {
+                const lv = km.get(nid) ?? 0;
+                sum += lv;
+                if (lv >= 4) mastered += 1;
+              }
+              const totalNodes = nodeIds.length;
+              const avg = totalNodes > 0 ? (sum / totalNodes).toFixed(1) : '0.0';
+              const pct = totalNodes > 0 ? Math.round((mastered / totalNodes) * 100) : 0;
               return (
                 <tr key={s.id} className="border-b border-gray-800/50 last:border-0 hover:bg-gray-800/30">
                   <td className="px-5 py-3">
@@ -71,13 +78,16 @@ export default async function RosterPage() {
                     </div>
                   </td>
                   <td className="px-5 py-3">
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      s.role === 'student' ? 'bg-gray-800 text-gray-400' : 'bg-indigo-900 text-indigo-300'
-                    }`}>
-                      {s.role}
-                    </span>
+                    <Link
+                      href={`/dashboard?studentId=${s.id}&program=${s.degree}`}
+                      className={`text-xs px-2 py-0.5 rounded-full ${
+                        degree.id === 'ml' ? 'bg-indigo-900 text-indigo-300' : 'bg-emerald-900 text-emerald-300'
+                      }`}
+                    >
+                      {degree.title}
+                    </Link>
                   </td>
-                  <td className="px-5 py-3 text-right text-gray-300">{agg.mastered}/{totalNodes}</td>
+                  <td className="px-5 py-3 text-right text-gray-300">{mastered}/{totalNodes}</td>
                   <td className="px-5 py-3 text-right text-gray-300">{passedByStudent.get(s.id) ?? 0}</td>
                   <td className="px-5 py-3 text-right text-gray-300">{avg}</td>
                   <td className="px-5 py-3 text-right">

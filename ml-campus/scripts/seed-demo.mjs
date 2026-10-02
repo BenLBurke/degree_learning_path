@@ -63,6 +63,7 @@ const STUDENTS = [
   {
     name: 'Aisha Khan',
     email: 'demo.aisha@byui.edu',
+    degree: 'ml',
     background: 'Physics undergrad, strong math, self-taught Python. Aiming for research.',
     goals: ['depth'],
     // Near the finish line: 8 courses mastered, deep into vision.
@@ -77,6 +78,7 @@ const STUDENTS = [
   {
     name: 'Marcus Johnson',
     email: 'demo.marcus@byui.edu',
+    degree: 'ml',
     background: 'Bootcamp grad, 2 years as a web dev. Comfortable coding, rusty on math.',
     goals: ['career'],
     // Solid foundations, mid intro-ml. One flagged oral, one failed classification.
@@ -91,6 +93,7 @@ const STUDENTS = [
   {
     name: 'Priya Patel',
     email: 'demo.priya@byui.edu',
+    degree: 'ml',
     background: 'Data analyst, strong stats, wants to move into ML engineering.',
     goals: ['breadth', 'career'],
     // Strong through prob-stats, working through deep learning. One flagged.
@@ -104,26 +107,42 @@ const STUDENTS = [
   {
     name: 'Sofia Nguyen',
     email: 'demo.sofia@byui.edu',
-    background: 'First-year CS student. Motivated but new to linear algebra.',
+    degree: 'supply-chain',
+    background: 'First-year business student starting the supply chain track.',
     goals: ['breadth'],
-    // Just starting: partway through the first course.
-    knowledge: buildKnowledge({ masteredCourses: 0, currentCourseLevels: [3, 2, 1, 0, 0, 0] }),
+    // Just starting supply chain: into fundamentals and analytics.
+    knowledge: {
+      'sc-fundamentals': 3,
+      'sc-analytics': 2,
+      'sc-design': 1,
+      'sc-dynamics': 0,
+      'sc-technology': 0,
+      'sc-capstone': 0,
+    },
     checkpoints: [
-      { id: 'cp-vectors-matrices-1', passed: true, review: false, feedback: 'Nice work for a first checkpoint — all three quantities correct.' },
-      { id: 'cp-matrix-operations-1', passed: false, review: false, feedback: 'Product correct, but the inverse was miscomputed; revisit cofactor method.' },
+      { id: 'cp-sc-fundamentals-1', passed: true, review: false, feedback: 'Correct EOQ and reorder point with formulas shown.' },
+      { id: 'cp-sc-fundamentals-2', passed: false, review: false, feedback: 'Explains holding cost but misses the service-level side of the trade-off.' },
     ],
   },
   {
     name: 'Derek Williams',
     email: 'demo.derek@byui.edu',
-    background: 'Career switcher from finance. Strong quant intuition, inconsistent follow-through.',
+    degree: 'supply-chain',
+    background: 'Operations analyst moving into supply chain strategy.',
     goals: ['depth', 'career'],
-    // Uneven: good calc, gaps elsewhere. A flagged oral awaiting review.
-    knowledge: buildKnowledge({ masteredCourses: 2, currentCourseLevels: [3, 1, 2, 0, 1, 0] }),
+    // Solid fundamentals/analytics, into design and dynamics. Two flagged orals.
+    knowledge: {
+      'sc-fundamentals': 4,
+      'sc-analytics': 3,
+      'sc-design': 2,
+      'sc-dynamics': 1,
+      'sc-technology': 1,
+      'sc-capstone': 0,
+    },
     checkpoints: [
-      { id: 'cp-svd-1', passed: true, review: false, feedback: 'Good statement of Eckart–Young and the variance connection.' },
-      { id: 'cp-eigenvalues-2', passed: false, review: true, feedback: 'Oral answer is intuitive but skips the symmetry argument. Needs a human call.' },
-      { id: 'cp-classification-2', passed: false, review: false, feedback: 'Precision/recall tradeoff misapplied to the given confusion matrix.' },
+      { id: 'cp-sc-fundamentals-1', passed: true, review: false, feedback: 'Strong inventory fundamentals.' },
+      { id: 'cp-sc-analytics-2', passed: false, review: true, feedback: 'Names simulation but does not justify when it beats a queuing formula. Needs human review.' },
+      { id: 'cp-sc-design-2', passed: false, review: true, feedback: 'Oral on S&OP is close but skips the financial reconciliation. Flagged for review.' },
     ],
   },
 ];
@@ -131,6 +150,8 @@ const STUDENTS = [
 const SAMPLE_RESPONSES = {
   'cp-eigenvalues-2': 'Symmetric matrices are special because they mirror across the diagonal, so their eigenvectors end up perpendicular. I think it has to do with the spectral theorem but I am not totally sure how to prove the orthogonality part.',
   'cp-backpropagation-2': 'Backprop applies the chain rule from the loss backward. When you multiply lots of small derivatives together through many layers the gradient gets tiny, which is the vanishing gradient problem. ReLU helps because its derivative is 1 for positive inputs.',
+  'cp-sc-analytics-2': 'I would use simulation when the system is too complicated for a formula. Queuing formulas are faster but simulation can handle more detail, so I would simulate when there are lots of moving parts.',
+  'cp-sc-design-2': 'S&OP brings sales and operations together each month to agree on one plan. They look at the demand forecast and the supply capacity and settle on numbers everyone commits to.',
   default: 'Here is my worked solution with the steps shown as requested.',
 };
 
@@ -153,6 +174,7 @@ async function main() {
         email: s.email,
         password: null,
         role: 'student',
+        degree: s.degree ?? 'ml',
         background: s.background,
         goals: JSON.stringify(s.goals),
         onboardingComplete: true,

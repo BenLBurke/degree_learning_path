@@ -22,9 +22,6 @@ export default async function DashboardPage({
   const viewerId = (session.user as any).id as string;
   const professor = await getCurrentProfessor();
 
-  const program = getProgram(searchParams.program);
-  const programCourseIds = new Set(program.courseIds);
-
   // A professor may inspect another student's dashboard read-only via ?studentId.
   const targetId = professor && searchParams.studentId ? searchParams.studentId : viewerId;
   const isViewingOther = targetId !== viewerId;
@@ -43,6 +40,10 @@ export default async function DashboardPage({
   ]);
 
   if (!student) redirect('/dashboard');
+
+  // Default to the enrolled degree of whoever's dashboard this is.
+  const program = getProgram(searchParams.program ?? student.degree);
+  const programCourseIds = new Set(program.courseIds);
 
   const knowledgeState: Record<string, number> = {};
   knowledgeStates.forEach((ks) => { knowledgeState[ks.nodeId] = ks.level; });

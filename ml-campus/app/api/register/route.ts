@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '../../../lib/db/prisma';
 import { mitCurriculum } from '../../../lib/degree/mitCurriculum';
 import { adminEmails } from '../../../lib/auth/roles';
+import { getProgram } from '../../../lib/degree/programs';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,11 +18,14 @@ export async function POST(req: NextRequest) {
 }
 
 async function handle(req: NextRequest) {
-  const { name, email, password, background, goals, knowledgeState, role } = await req.json();
+  const { name, email, password, background, goals, knowledgeState, role, degree } = await req.json();
 
   if (!email || !password || !name) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
+
+  // Resolve the requested degree against the known programs (defaults to 'ml').
+  const resolvedDegree = getProgram(degree).id;
 
   const existing = await prisma.student.findUnique({ where: { email } });
   if (existing) {
@@ -43,6 +47,7 @@ async function handle(req: NextRequest) {
       password: hashedPassword,
       background,
       role: resolvedRole,
+      degree: resolvedDegree,
       goals: JSON.stringify(goals || []),
       onboardingComplete: true,
     },
