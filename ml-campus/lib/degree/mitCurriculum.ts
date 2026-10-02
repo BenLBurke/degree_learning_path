@@ -1101,6 +1101,126 @@ const capstone: Course = {
   ],
 };
 
+// ---------------------------------------------------------------------------
+// Course 11 — Supply Chain Management (MITx CTL.SCx MicroMasters)
+// ---------------------------------------------------------------------------
+const supplyChain: Course = {
+  id: 'supply-chain',
+  title: 'Supply Chain Management',
+  mitEquivalent: 'MITx CTL.SC0x–SC4x',
+  description:
+    'The MITx Supply Chain Management track: fundamentals, analytics, network design, system dynamics, and the technology that runs modern supply chains.',
+  nodes: [
+    {
+      id: 'sc-fundamentals',
+      courseId: 'supply-chain',
+      title: 'Supply Chain Fundamentals',
+      description:
+        'Demand forecasting, inventory management across single and multiple periods, and transportation basics (MITx CTL.SC1x).',
+      prerequisites: [],
+      estimatedHours: 12,
+      content: [
+        { type: 'text', content: 'A supply chain balances supply and demand across sourcing, production, inventory, and transportation. The core trade-off is cost versus service level.' },
+        { type: 'text', content: 'Demand forecasting (moving averages, exponential smoothing) feeds inventory policy. The EOQ model and safety stock set how much to order and how much buffer to hold against variability.' },
+        { type: 'link', content: 'MITx CTL.SC1x — Supply Chain Fundamentals (MicroMasters in Supply Chain Management).' },
+        { type: 'problem', content: 'Given weekly demand ~ Normal(mean 100, sd 20), lead time 2 weeks, and a 95% service level, compute the safety stock and reorder point.' },
+      ],
+      checkpoints: [
+        { id: 'cp-sc-fundamentals-1', nodeId: 'sc-fundamentals', type: 'problem_set', prompt: 'Compute EOQ for annual demand 10,000 units, ordering cost $50, holding cost $2/unit/yr. Then compute the reorder point for a 1-week lead time and 50 units/week demand.', passingCriteria: 'EOQ ≈ 707 units and reorder point = 50 units, with correct formulas shown.', requiresHumanReview: false },
+        { id: 'cp-sc-fundamentals-2', nodeId: 'sc-fundamentals', type: 'written', prompt: 'Explain the cost-vs-service-level trade-off and how safety stock mediates it.', passingCriteria: 'Student connects higher safety stock to higher holding cost but better service / fewer stockouts.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'sc-analytics',
+      courseId: 'supply-chain',
+      title: 'Supply Chain Analytics',
+      description:
+        'Statistics, regression, optimization (shortest path, TSP, vehicle routing, mixed-integer programming), simulation, and queuing theory (MITx CTL.SC0x).',
+      prerequisites: ['probability-foundations'],
+      estimatedHours: 14,
+      content: [
+        { type: 'text', content: 'Analytics turns supply chain decisions into models: hypothesis testing and regression for understanding data, and optimization for prescriptive decisions.' },
+        { type: 'text', content: 'Network and routing problems — shortest path, the traveling salesman problem, and vehicle routing — are formulated as (often mixed-integer) linear programs. Discrete-event simulation and queuing theory handle variability and congestion.' },
+        { type: 'link', content: 'MITx CTL.SC0x — Supply Chain Analytics.' },
+        { type: 'problem', content: 'Formulate the assignment of 3 trucks to 3 routes with given costs as a linear program and state its objective and constraints.' },
+      ],
+      checkpoints: [
+        { id: 'cp-sc-analytics-1', nodeId: 'sc-analytics', type: 'problem_set', prompt: 'Write the LP formulation (decision variables, objective, constraints) for a shortest-path problem on a small 4-node network you define.', passingCriteria: 'Correct flow-conservation constraints, binary/continuous variables, and a minimize-cost objective.', requiresHumanReview: false },
+        { id: 'cp-sc-analytics-2', nodeId: 'sc-analytics', type: 'written', prompt: 'When would you use discrete-event simulation instead of a closed-form queuing formula?', passingCriteria: 'Student notes simulation suits complex, non-analytical systems with interacting variability.', requiresHumanReview: true },
+      ],
+    },
+    {
+      id: 'sc-design',
+      courseId: 'supply-chain',
+      title: 'Supply Chain Design',
+      description:
+        'Network design and facility location, omni-channel distribution, production planning, S&OP, sourcing/procurement, and supply chain finance (MITx CTL.SC2x).',
+      prerequisites: ['sc-fundamentals', 'sc-analytics'],
+      estimatedHours: 14,
+      content: [
+        { type: 'text', content: 'Design decisions set the physical and financial structure of the chain: how many facilities, where to locate them, how to serve channels, and how to source materials.' },
+        { type: 'text', content: 'Facility location is a classic optimization: trade off fixed facility costs against transportation and service. Sales & Operations Planning (S&OP) aligns demand and supply plans across the business.' },
+        { type: 'link', content: 'MITx CTL.SC2x — Supply Chain Design.' },
+      ],
+      checkpoints: [
+        { id: 'cp-sc-design-1', nodeId: 'sc-design', type: 'written', prompt: 'A company serves the US from one central warehouse and is considering adding two regional ones. List the costs that rise and fall, and how you would decide.', passingCriteria: 'Student weighs fixed/facility cost increases against transportation and service-level improvements, and proposes an optimization or total-cost comparison.', requiresHumanReview: false },
+        { id: 'cp-sc-design-2', nodeId: 'sc-design', type: 'oral', prompt: 'Explain how S&OP reconciles a demand plan with a constrained supply plan.', passingCriteria: 'Student describes cross-functional alignment of demand, supply, and financial plans on a rolling horizon.', requiresHumanReview: true },
+      ],
+    },
+    {
+      id: 'sc-dynamics',
+      courseId: 'supply-chain',
+      title: 'Supply Chain Dynamics',
+      description:
+        'System dynamics and the bullwhip effect, supply chain strategy, international chains, resilience, and sustainability (MITx CTL.SC3x).',
+      prerequisites: ['sc-design'],
+      estimatedHours: 12,
+      content: [
+        { type: 'text', content: 'Supply chains are complex feedback systems. The bullwhip effect — demand variability amplifying upstream — is the canonical example of system dynamics driving poor performance.' },
+        { type: 'text', content: 'Strategy, resilience (buffering and flexibility against disruption), and sustainability are increasingly central, especially for international chains exposed to exogenous shocks.' },
+        { type: 'link', content: 'MITx CTL.SC3x — Supply Chain Dynamics.' },
+      ],
+      checkpoints: [
+        { id: 'cp-sc-dynamics-1', nodeId: 'sc-dynamics', type: 'written', prompt: 'Describe the bullwhip effect, name two causes, and give one mitigation.', passingCriteria: 'Student explains upstream amplification of demand variability, cites causes (e.g. order batching, forecast error), and a mitigation (e.g. information sharing).', requiresHumanReview: false },
+        { id: 'cp-sc-dynamics-2', nodeId: 'sc-dynamics', type: 'written', prompt: 'Contrast efficiency and resilience as supply chain strategies and when each is preferable.', passingCriteria: 'Student articulates the cost-vs-robustness trade-off with context-appropriate examples.', requiresHumanReview: true },
+      ],
+    },
+    {
+      id: 'sc-technology',
+      courseId: 'supply-chain',
+      title: 'Supply Chain Technology & Systems',
+      description:
+        'The CRISP-DM data process, data modeling, machine learning in supply chains, warehouse optimization, and enterprise systems (WMS, TMS, APS, MPS) (MITx CTL.SC4x).',
+      prerequisites: ['sc-analytics', 'ml-fundamentals'],
+      estimatedHours: 12,
+      content: [
+        { type: 'text', content: 'Modern supply chains run on software and data. The CRISP-DM framework structures data projects; WMS, TMS, APS, and MPS systems execute warehouse, transportation, planning, and scheduling.' },
+        { type: 'text', content: 'Supervised and unsupervised machine learning power demand forecasting, anomaly detection, and segmentation. Tracking and traceability (barcodes, RFID, IoT) give visibility across the chain.' },
+        { type: 'link', content: 'MITx CTL.SC4x — Supply Chain Technology and Systems.' },
+      ],
+      checkpoints: [
+        { id: 'cp-sc-technology-1', nodeId: 'sc-technology', type: 'written', prompt: 'Map a demand-forecasting project onto the six CRISP-DM phases.', passingCriteria: 'Student correctly orders business understanding, data understanding, data prep, modeling, evaluation, and deployment with supply-chain-relevant detail.', requiresHumanReview: false },
+        { id: 'cp-sc-technology-2', nodeId: 'sc-technology', type: 'written', prompt: 'Give one supervised and one unsupervised ML use case in a supply chain and the data each needs.', passingCriteria: 'Student names a valid supervised case (e.g. demand forecasting) and unsupervised case (e.g. supplier segmentation) with appropriate data.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'sc-capstone',
+      courseId: 'supply-chain',
+      title: 'Supply Chain Capstone',
+      description:
+        'Integrate fundamentals, analytics, design, dynamics, and technology into an end-to-end supply chain analysis and recommendation.',
+      prerequisites: ['sc-design', 'sc-dynamics', 'sc-technology'],
+      estimatedHours: 16,
+      content: [
+        { type: 'text', content: 'The capstone applies the full track to a realistic case: diagnose a supply chain, model the key decision analytically, and recommend a design or policy change with a cost/service justification.' },
+      ],
+      checkpoints: [
+        { id: 'cp-sc-capstone-1', nodeId: 'sc-capstone', type: 'written', prompt: 'Write a supply chain analysis for a company of your choice: current state, the key decision, your model, and a recommendation with expected impact.', passingCriteria: 'A coherent analysis that applies at least two track concepts (e.g. inventory + network design) with a justified, quantified recommendation.', requiresHumanReview: true },
+      ],
+    },
+  ],
+};
+
 export const mitCurriculum: DegreeGraph = {
   courses: [
     mathLinalg,
@@ -1113,5 +1233,6 @@ export const mitCurriculum: DegreeGraph = {
     computerVision,
     mlSystems,
     capstone,
+    supplyChain,
   ],
 };
