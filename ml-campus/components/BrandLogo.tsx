@@ -8,9 +8,9 @@ interface BrandLogoProps {
 }
 
 /**
- * Co-branded lockup: BYU-Idaho logo + "ML Campus".
- * The logo file lives at /public/byui-logo.svg — replace that single file with
- * the official BYU-Idaho asset (same path/name) and it updates everywhere.
+ * Co-branded lockup: BYU-Idaho logo (on a white chip so a dark/transparent
+ * logo stays visible on dark backgrounds) + "ML Campus".
+ * The logo file lives at /public/byui-logo.svg.
  */
 export default function BrandLogo({
   size = 32,
@@ -19,8 +19,10 @@ export default function BrandLogo({
 }: BrandLogoProps) {
   return (
     <span className="flex items-center gap-2.5">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/byui-logo.svg" alt="BYU-Idaho" width={size} height={size} />
+      <span className="bg-white rounded-md p-1 flex items-center shrink-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/byui-logo.svg" alt="BYU-Idaho" style={{ height: size, width: 'auto' }} />
+      </span>
       {showWordmark && <span className={`${wordmarkClass} text-white`}>ML Campus</span>}
     </span>
   );
