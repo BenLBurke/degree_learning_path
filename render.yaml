@@ -3,7 +3,7 @@
 # (demo content is always present; visitor-created data resets on restart/sleep).
 services:
   - type: web
-    name: ml-campus
+    name: degree-learning-path
     runtime: node
     plan: free
     rootDir: ml-campus
