@@ -19,9 +19,9 @@ export default function AdminSidebar({ pendingCount, professorName }: AdminSideb
   const pathname = usePathname();
 
   const items = [
+    { href: '/dashboard', label: 'Dashboard', icon: ICONS.mine },
     { href: '/admin', label: 'Review Queue', icon: ICONS.review, badge: pendingCount, exact: true },
     { href: '/admin/roster', label: 'Roster', icon: ICONS.roster },
-    { href: '/dashboard', label: 'My Dashboard', icon: ICONS.mine },
   ];
 
   function isActive(href: string, exact?: boolean) {

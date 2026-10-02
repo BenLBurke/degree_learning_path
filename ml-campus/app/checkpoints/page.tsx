@@ -67,7 +67,7 @@ export default async function CheckpointsPage({
             {passed} of {all.length} checkpoints passed across all courses.
           </p>
         </div>
-        <CheckpointList courses={courses} readOnly={isViewingOther} />
+        <CheckpointList courses={courses} canAttempt={!isViewingOther} canResolve={isViewingOther} />
       </div>
     </div>
   );

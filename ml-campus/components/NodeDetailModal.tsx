@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 interface DepItem {
   id: string;
   title: string;
@@ -11,6 +13,10 @@ export interface CheckpointRow {
   title: string;
   type: string;
   status: 'passed' | 'pending' | 'failed' | 'todo';
+  prompt?: string;
+  response?: string;
+  feedback?: string | null;
+  submittedAt?: string;
 }
 
 export interface NodeDetail {
@@ -36,6 +42,57 @@ const CP_STATUS: Record<string, { label: string; cls: string }> = {
   failed: { label: 'Retry', cls: 'bg-red-900 text-red-300' },
   todo: { label: 'To do', cls: 'bg-gray-800 text-gray-400' },
 };
+
+function CheckpointItem({ cp }: { cp: CheckpointRow }) {
+  const [open, setOpen] = useState(false);
+  const meta = CP_STATUS[cp.status];
+  const hasDetail = !!(cp.prompt || cp.response);
+  return (
+    <li className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+      <button
+        onClick={() => hasDetail && setOpen((o) => !o)}
+        className={`w-full flex items-center justify-between px-3 py-2 text-left ${hasDetail ? 'hover:bg-gray-700/50' : ''}`}
+      >
+        <span className="text-xs text-gray-300 truncate flex items-center gap-1.5">
+          {hasDetail && (
+            <span className={`text-gray-500 text-[9px] transition-transform ${open ? 'rotate-90' : ''}`}>▶</span>
+          )}
+          {cp.title}
+          <span className="text-gray-600 ml-1 capitalize">· {cp.type.replace('_', ' ')}</span>
+        </span>
+        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ml-2 ${meta.cls}`}>
+          {meta.label}
+        </span>
+      </button>
+      {open && hasDetail && (
+        <div className="px-3 pb-3 pt-1 space-y-2 border-t border-gray-700">
+          {cp.prompt && (
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-gray-500 mb-0.5">Question</p>
+              <p className="text-xs text-gray-300">{cp.prompt}</p>
+            </div>
+          )}
+          {cp.response ? (
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-gray-500 mb-0.5">Submitted</p>
+              <p className="text-xs text-gray-200 bg-gray-900 border border-gray-700 rounded px-2 py-1.5 whitespace-pre-wrap">
+                {cp.response}
+              </p>
+            </div>
+          ) : (
+            <p className="text-xs text-gray-600">Not attempted yet.</p>
+          )}
+          {cp.feedback && (
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-gray-500 mb-0.5">Feedback</p>
+              <p className="text-xs text-gray-400 italic">{cp.feedback}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </li>
+  );
+}
 
 export default function NodeDetailModal({
   detail,
@@ -144,24 +201,10 @@ export default function NodeDetailModal({
               Checkpoints ({detail.checkpoints.filter((c) => c.status === 'passed').length}/
               {detail.checkpoints.length} passed)
             </p>
-            <ul className="space-y-1.5 max-h-44 overflow-y-auto">
-              {detail.checkpoints.map((cp) => {
-                const meta = CP_STATUS[cp.status];
-                return (
-                  <li
-                    key={cp.id}
-                    className="flex items-center justify-between bg-gray-800 border border-gray-700 rounded-lg px-3 py-2"
-                  >
-                    <span className="text-xs text-gray-300 truncate">
-                      {cp.title}
-                      <span className="text-gray-600 ml-1.5 capitalize">· {cp.type.replace('_', ' ')}</span>
-                    </span>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ml-2 ${meta.cls}`}>
-                      {meta.label}
-                    </span>
-                  </li>
-                );
-              })}
+            <ul className="space-y-1.5 max-h-56 overflow-y-auto">
+              {detail.checkpoints.map((cp) => (
+                <CheckpointItem key={cp.id} cp={cp} />
+              ))}
             </ul>
           </div>
         )}

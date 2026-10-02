@@ -30,11 +30,14 @@ import {
   getConcept,
 } from '@/lib/degree/graphModel';
 import NodeDetailModal, { NodeDetail } from './NodeDetailModal';
-import { checkpointStatus } from '@/lib/degree/checkpoints';
+import { checkpointStatus, latestSubmission } from '@/lib/degree/checkpoints';
 
 interface CheckpointResultRow {
+  id: string;
   checkpointId: string;
+  response: string;
   passed: boolean;
+  agentFeedback: string | null;
   requiresHumanReview: boolean;
   submittedAt: string;
 }
@@ -228,12 +231,19 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
       masteryPct: m.pct,
       unlocked: isCourseUnlocked(courseId, ks),
       checkpoints: course.nodes.flatMap((n) =>
-        n.checkpoints.map((cp) => ({
-          id: cp.id,
-          title: n.title,
-          type: cp.type,
-          status: checkpointStatus(checkpointResults, cp.id),
-        }))
+        n.checkpoints.map((cp) => {
+          const sub = latestSubmission(checkpointResults, cp.id);
+          return {
+            id: cp.id,
+            title: n.title,
+            type: cp.type,
+            status: checkpointStatus(checkpointResults, cp.id),
+            prompt: cp.prompt,
+            response: sub?.response,
+            feedback: sub?.feedback,
+            submittedAt: sub?.submittedAt,
+          };
+        })
       ),
       prereqs: coursePrereqIds(courseId).map((id) => ({
         id,
@@ -267,12 +277,19 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
       masteryPct: m.pct,
       unlocked,
       estimatedHours: node.estimatedHours,
-      checkpoints: node.checkpoints.map((cp) => ({
-        id: cp.id,
-        title: cp.type === 'oral' ? 'Oral checkpoint' : cp.type === 'code' ? 'Code submission' : cp.type === 'problem_set' ? 'Problem set' : 'Written response',
-        type: cp.type,
-        status: checkpointStatus(checkpointResults, cp.id),
-      })),
+      checkpoints: node.checkpoints.map((cp) => {
+        const sub = latestSubmission(checkpointResults, cp.id);
+        return {
+          id: cp.id,
+          title: cp.type === 'oral' ? 'Oral checkpoint' : cp.type === 'code' ? 'Code submission' : cp.type === 'problem_set' ? 'Problem set' : 'Written response',
+          type: cp.type,
+          status: checkpointStatus(checkpointResults, cp.id),
+          prompt: cp.prompt,
+          response: sub?.response,
+          feedback: sub?.feedback,
+          submittedAt: sub?.submittedAt,
+        };
+      }),
       prereqs: conceptPrereqIds(nodeId).map((id) => ({
         id,
         title: getConcept(id)?.title ?? id,

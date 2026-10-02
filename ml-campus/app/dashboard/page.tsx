@@ -44,8 +44,11 @@ export default async function DashboardPage({
   knowledgeStates.forEach((ks) => { knowledgeState[ks.nodeId] = ks.level; });
 
   const checkpointResults = checkpointRows.map((r) => ({
+    id: r.id,
     checkpointId: r.checkpointId,
+    response: r.response,
     passed: r.passed,
+    agentFeedback: r.agentFeedback,
     requiresHumanReview: r.requiresHumanReview,
     submittedAt: r.submittedAt.toISOString(),
   }));
