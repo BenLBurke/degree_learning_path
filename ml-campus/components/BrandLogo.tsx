@@ -1,5 +1,3 @@
-import Image from 'next/image';
-
 interface BrandLogoProps {
   /** Pixel height of the logo mark. */
   size?: number;
@@ -11,7 +9,7 @@ interface BrandLogoProps {
 
 /**
  * Co-branded lockup: BYU-Idaho logo + "ML Campus".
- * The logo file lives at /public/byui-logo.svg — replace that single file with
+ * The logo file lives at /public/byui-logo.png — replace that single file with
  * the official BYU-Idaho asset (same path/name) and it updates everywhere.
  */
 export default function BrandLogo({
@@ -21,13 +19,8 @@ export default function BrandLogo({
 }: BrandLogoProps) {
   return (
     <span className="flex items-center gap-2.5">
-      <Image
-        src="/byui-logo.svg"
-        alt="BYU-Idaho"
-        width={size}
-        height={size}
-        priority
-      />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/byui-logo.png" alt="BYU-Idaho" width={size} height={size} />
       {showWordmark && <span className={`${wordmarkClass} text-white`}>ML Campus</span>}
     </span>
   );

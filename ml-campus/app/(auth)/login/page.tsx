@@ -38,7 +38,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <img src="/byui-logo.svg" alt="BYU-Idaho" width={56} height={56} className="mx-auto mb-3" />
+          <img src="/byui-logo.png" alt="BYU-Idaho" width={56} height={56} className="mx-auto mb-3" />
           <h1 className="text-3xl font-bold text-white">ML Campus</h1>
           <p className="text-gray-400 mt-2">
             {isProfessor ? 'Professor sign in' : 'Sign in to continue your degree'}
