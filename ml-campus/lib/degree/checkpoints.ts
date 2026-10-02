@@ -118,3 +118,68 @@ export function checkpointsByCourse(results: ResultRow[]): CourseCheckpoints[] {
     ),
   }));
 }
+
+// ---------------------------------------------------------------------------
+// Completion = checkpoints PASSED (the real gate), not self-reported knowledge.
+// A node/course is "complete" only when all its checkpoints are passed.
+// ---------------------------------------------------------------------------
+
+const nodeIndex = new Map<string, { node: (typeof mitCurriculum.courses)[number]['nodes'][number] }>();
+for (const course of mitCurriculum.courses) {
+  for (const node of course.nodes) nodeIndex.set(node.id, { node });
+}
+
+export interface Completion {
+  passed: number;
+  total: number; // total checkpoints
+  pct: number; // 0..100 of checkpoints passed
+  nodesComplete: number;
+  nodesTotal: number;
+  complete: boolean;
+}
+
+/** Set of checkpoint ids the student has passed. */
+export function passedIdSet(results: { checkpointId: string; passed: boolean }[]): Set<string> {
+  return new Set(results.filter((r) => r.passed).map((r) => r.checkpointId));
+}
+
+function tally(
+  nodes: (typeof mitCurriculum.courses)[number]['nodes'],
+  passedIds: Set<string>
+): Completion {
+  let passed = 0;
+  let total = 0;
+  let nodesComplete = 0;
+  for (const n of nodes) {
+    let np = 0;
+    const nt = n.checkpoints.length;
+    for (const cp of n.checkpoints) {
+      total += 1;
+      if (passedIds.has(cp.id)) {
+        passed += 1;
+        np += 1;
+      }
+    }
+    if (nt === 0 || np === nt) nodesComplete += 1;
+  }
+  const nodesTotal = nodes.length;
+  const pct = total > 0 ? Math.round((passed / total) * 100) : 0;
+  return { passed, total, pct, nodesComplete, nodesTotal, complete: nodesTotal > 0 && nodesComplete === nodesTotal };
+}
+
+export function nodeCompletion(nodeId: string, passedIds: Set<string>): Completion {
+  const e = nodeIndex.get(nodeId);
+  return tally(e ? [e.node] : [], passedIds);
+}
+
+export function courseCompletion(courseId: string, passedIds: Set<string>): Completion {
+  const c = mitCurriculum.courses.find((x) => x.id === courseId);
+  return tally(c ? c.nodes : [], passedIds);
+}
+
+export function coursesCompletion(courseIds: string[], passedIds: Set<string>): Completion {
+  const set = new Set(courseIds);
+  const nodes = mitCurriculum.courses.filter((c) => set.has(c.id)).flatMap((c) => c.nodes);
+  return tally(nodes, passedIds);
+}
+

@@ -17,8 +17,6 @@ import ReactFlow, {
 import 'reactflow/dist/style.css';
 import { mitCurriculum } from '@/lib/degree/mitCurriculum';
 import {
-  courseMastery,
-  conceptMastery,
   courseEdges,
   coursePrereqIds,
   courseDependentIds,
@@ -30,7 +28,13 @@ import {
   getConcept,
 } from '@/lib/degree/graphModel';
 import NodeDetailModal, { NodeDetail } from './NodeDetailModal';
-import { checkpointStatus, latestSubmission } from '@/lib/degree/checkpoints';
+import {
+  checkpointStatus,
+  latestSubmission,
+  passedIdSet,
+  courseCompletion,
+  nodeCompletion,
+} from '@/lib/degree/checkpoints';
 
 interface CheckpointResultRow {
   id: string;
@@ -108,6 +112,10 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [detail, setDetail] = useState<NodeDetail | null>(null);
 
+  // Completion (and the green "complete" state) is driven by PASSED checkpoints,
+  // not self-reported knowledge level.
+  const passedIds = useMemo(() => passedIdSet(checkpointResults), [checkpointResults]);
+
   // Build course-view or concept-view nodes/edges.
   const built = useMemo(() => {
     const nodes: Node[] = [];
@@ -119,7 +127,7 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
         ? mitCurriculum.courses.filter((c) => courseSet.has(c.id))
         : mitCurriculum.courses;
       courses.forEach((course, i) => {
-        const m = courseMastery(course.id, ks);
+        const comp = courseCompletion(course.id, passedIds);
         const unlocked = isCourseUnlocked(course.id, ks);
         const col = i % 4;
         const row = Math.floor(i / 4);
@@ -130,7 +138,7 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
           data: {
             kind: 'course',
             label: course.title,
-            pct: m.pct,
+            pct: comp.pct,
             unlocked,
             onInfo: () => openCourseDetail(course.id),
           },
@@ -143,7 +151,7 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
     } else {
       const course = getCourse(view.courseId)!;
       course.nodes.forEach((node, i) => {
-        const m = conceptMastery(node.id, ks);
+        const comp = nodeCompletion(node.id, passedIds);
         const unlocked = isConceptUnlocked(node.id, ks);
         const col = i % 3;
         const row = Math.floor(i / 3);
@@ -154,7 +162,7 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
           data: {
             kind: 'concept',
             label: node.title,
-            pct: m.pct,
+            pct: comp.pct,
             unlocked,
             onInfo: () => openConceptDetail(node.id),
           },
@@ -169,7 +177,7 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
     }
     return { nodes, edges };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, ks, courseIds]);
+  }, [view, ks, courseIds, passedIds]);
 
   // Apply highlight styling derived from highlightId.
   const { styledNodes, styledEdges } = useMemo(() => {
@@ -227,14 +235,14 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
   // ── Detail builders ─────────────────────────────────────────────────────────
   function openCourseDetail(courseId: string) {
     const course = getCourse(courseId)!;
-    const m = courseMastery(courseId, ks);
+    const comp = courseCompletion(courseId, passedIds);
     setDetail({
       kind: 'course',
       id: courseId,
       title: course.title,
-      subtitle: `MIT ${course.mitEquivalent} · ${m.mastered}/${m.total} concepts mastered`,
+      subtitle: `MIT ${course.mitEquivalent} · ${comp.passed}/${comp.total} checkpoints passed`,
       description: course.description,
-      masteryPct: m.pct,
+      masteryPct: comp.pct,
       unlocked: isCourseUnlocked(courseId, ks),
       checkpoints: course.nodes.flatMap((n) =>
         n.checkpoints.map((cp) => {
@@ -254,7 +262,7 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
       prereqs: coursePrereqIds(courseId).map((id) => ({
         id,
         title: getCourse(id)?.title ?? id,
-        mastered: courseMastery(id, ks).pct >= 100,
+        mastered: courseCompletion(id, passedIds).complete,
       })),
       dependents: courseDependentIds(courseId).map((id) => ({
         id,
@@ -272,7 +280,7 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
 
   function openConceptDetail(nodeId: string) {
     const node = getConcept(nodeId)!;
-    const m = conceptMastery(nodeId, ks);
+    const comp = nodeCompletion(nodeId, passedIds);
     const unlocked = isConceptUnlocked(nodeId, ks);
     setDetail({
       kind: 'concept',
@@ -280,7 +288,7 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
       title: node.title,
       subtitle: getCourse(node.courseId)?.title,
       description: node.description,
-      masteryPct: m.pct,
+      masteryPct: comp.pct,
       unlocked,
       estimatedHours: node.estimatedHours,
       checkpoints: node.checkpoints.map((cp) => {

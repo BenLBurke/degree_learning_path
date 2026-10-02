@@ -69,10 +69,18 @@ const STUDENTS = [
     // Near the finish line: 8 courses mastered, deep into vision.
     knowledge: buildKnowledge({ masteredCourses: 8, currentCourseLevels: [4, 4, 3, 3, 2, 1] }),
     checkpoints: [
-      { id: 'cp-vectors-matrices-1', passed: true, review: false, feedback: 'Flawless — correct dot product, norms, and cosine with clean working.' },
-      { id: 'cp-eigenvalues-1', passed: true, review: false, feedback: 'Correct eigenvalues and eigenvectors; strong grasp of diagonalization.' },
+      // Linear Algebra — all checkpoints passed (course shows complete/green).
+      { id: 'cp-vectors-matrices-1', passed: true, review: false, feedback: 'Flawless — correct dot product, norms, and cosine.' },
+      { id: 'cp-vectors-matrices-2', passed: true, review: false, feedback: 'Clear projection/similarity explanation.' },
+      { id: 'cp-matrix-operations-1', passed: true, review: false, feedback: 'Correct product, inverse, and rank.' },
+      { id: 'cp-linear-transformations-1', passed: true, review: false, feedback: 'All four subspaces correct.' },
+      { id: 'cp-eigenvalues-1', passed: true, review: false, feedback: 'Correct eigenvalues and eigenvectors.' },
+      { id: 'cp-eigenvalues-2', passed: true, review: false, feedback: 'Solid spectral-theorem argument.' },
+      { id: 'cp-svd-1', passed: true, review: false, feedback: 'Good Eckart–Young explanation.' },
+      { id: 'cp-applications-ml-1', passed: true, review: false, feedback: 'Strong PCA connection.' },
+      // Deep learning — partial.
       { id: 'cp-backpropagation-1', passed: true, review: false, feedback: 'Derived the chain-rule gradient flow correctly.' },
-      { id: 'cp-cnns-1', passed: true, review: false, feedback: 'Solid understanding of convolution and parameter sharing.' },
+      { id: 'cp-cnns-1', passed: true, review: false, feedback: 'Solid understanding of convolution.' },
     ],
   },
   {
@@ -136,7 +144,13 @@ const STUDENTS = [
       'scd-network': 1,
     },
     checkpoints: [
+      // Supply Chain Fundamentals — all passed (course shows complete/green).
+      { id: 'cp-scf-logistics-1', passed: true, review: false, feedback: 'Good grasp of the cost-vs-service trade-off.' },
+      { id: 'cp-scf-forecasting-1', passed: true, review: false, feedback: 'Correct smoothing application.' },
       { id: 'cp-scf-eoq-1', passed: true, review: false, feedback: 'Correct EOQ and order frequency.' },
+      { id: 'cp-scf-safety-stock-1', passed: true, review: false, feedback: 'Correct safety stock and reorder point.' },
+      { id: 'cp-scf-transport-1', passed: true, review: false, feedback: 'Clear LTL-vs-FTL trade-off.' },
+      // Analytics / Design — flagged for review.
       { id: 'cp-sca-simulation-1', passed: false, review: true, feedback: 'Names simulation but does not justify when it beats a queuing formula. Needs human review.' },
       { id: 'cp-scd-network-1', passed: false, review: true, feedback: 'Lists costs but does not resolve the facility-count decision. Flagged for review.' },
     ],

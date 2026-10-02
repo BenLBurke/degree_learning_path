@@ -1,24 +1,24 @@
 import { prisma } from '@/lib/db/prisma';
 import { reviewQueueByStudent } from '@/lib/admin/pending';
-import { getProgram, programNodeIds } from '@/lib/degree/programs';
+import { getProgram } from '@/lib/degree/programs';
+import { coursesCompletion } from '@/lib/degree/checkpoints';
 import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 
 export default async function RosterPage() {
-  const [students, allKnowledge, allCheckpoints, pendingByStudent] = await Promise.all([
+  const [students, allCheckpoints, pendingByStudent] = await Promise.all([
     prisma.student.findMany({ orderBy: [{ degree: 'asc' }, { name: 'asc' }] }),
-    prisma.knowledgeState.findMany(),
     prisma.checkpointResult.findMany({ where: { passed: true } }),
     reviewQueueByStudent(),
   ]);
 
-  // knowledge level per student per node
-  const ksByStudent = new Map<string, Map<string, number>>();
-  for (const ks of allKnowledge) {
-    let m = ksByStudent.get(ks.studentId);
-    if (!m) { m = new Map(); ksByStudent.set(ks.studentId, m); }
-    m.set(ks.nodeId, ks.level);
+  // Passed checkpoint ids per student (completion is checkpoint-based).
+  const passedByStudentSet = new Map<string, Set<string>>();
+  for (const cp of allCheckpoints) {
+    let s = passedByStudentSet.get(cp.studentId);
+    if (!s) { s = new Set(); passedByStudentSet.set(cp.studentId, s); }
+    s.add(cp.checkpointId);
   }
 
   const passedByStudent = new Map<string, number>();
@@ -48,18 +48,12 @@ export default async function RosterPage() {
           <tbody>
             {students.map((s) => {
               const degree = getProgram(s.degree);
-              const nodeIds = programNodeIds(s.degree);
-              const km = ksByStudent.get(s.id) ?? new Map<string, number>();
-              let sum = 0;
-              let mastered = 0;
-              for (const nid of nodeIds) {
-                const lv = km.get(nid) ?? 0;
-                sum += lv;
-                if (lv >= 4) mastered += 1;
-              }
-              const totalNodes = nodeIds.length;
-              const avg = totalNodes > 0 ? (sum / totalNodes).toFixed(1) : '0.0';
-              const pct = totalNodes > 0 ? Math.round((mastered / totalNodes) * 100) : 0;
+              const passedSet = passedByStudentSet.get(s.id) ?? new Set<string>();
+              const comp = coursesCompletion(degree.courseIds, passedSet);
+              const mastered = comp.nodesComplete;
+              const totalNodes = comp.nodesTotal;
+              const avg = comp.total > 0 ? ((comp.passed / comp.total) * 4).toFixed(1) : '0.0';
+              const pct = comp.pct;
               return (
                 <tr key={s.id} className="border-b border-gray-800/50 last:border-0 hover:bg-gray-800/30">
                   <td className="px-5 py-3">

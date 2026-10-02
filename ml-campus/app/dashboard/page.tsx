@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db/prisma';
 import { getAllNodes, getNextRecommendedNodes } from '@/lib/agent/pathfinder';
 import { mitCurriculum } from '@/lib/degree/mitCurriculum';
 import { PROGRAMS, getProgram } from '@/lib/degree/programs';
+import { passedIdSet, coursesCompletion, courseCompletion, nodeCompletion } from '@/lib/degree/checkpoints';
 import DegreeGraphClient from './DegreeGraphClient';
 import CopilotSidecarWrapper from '@/components/CopilotSidecarWrapper';
 import StudentPicker from './StudentPicker';
@@ -62,9 +63,14 @@ export default async function DashboardPage({
   }));
 
   const allNodes = getAllNodes().filter((n) => programCourseIds.has(n.courseId));
-  const mastered = allNodes.filter((n) => (knowledgeState[n.id] ?? 0) >= 4).length;
-  const inProgress = allNodes.filter((n) => { const l = knowledgeState[n.id] ?? 0; return l >= 1 && l < 4; }).length;
-  const total = allNodes.length;
+  const passedIds = passedIdSet(checkpointRows);
+  const programStats = coursesCompletion(program.courseIds, passedIds);
+  const mastered = programStats.nodesComplete;
+  const total = programStats.nodesTotal;
+  const inProgress = allNodes.filter((n) => {
+    const c = nodeCompletion(n.id, passedIds);
+    return c.passed > 0 && !c.complete;
+  }).length;
   const pct = total ? Math.round((mastered / total) * 100) : 0;
 
   const recommended = getNextRecommendedNodes(knowledgeState, student.goals ?? '');
@@ -203,9 +209,7 @@ export default async function DashboardPage({
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Courses</h3>
             <div className="space-y-2">
               {programCourses.map((course) => {
-                const levels = course.nodes.map((n) => knowledgeState[n.id] ?? 0);
-                const avg = levels.reduce((a, b) => a + b, 0) / levels.length;
-                const coursePct = Math.round((avg / 4) * 100);
+                const coursePct = courseCompletion(course.id, passedIds).pct;
                 return (
                   <div key={course.id} className="space-y-1">
                     <div className="flex justify-between text-xs">
