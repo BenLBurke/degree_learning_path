@@ -30,9 +30,18 @@ import {
   getConcept,
 } from '@/lib/degree/graphModel';
 import NodeDetailModal, { NodeDetail } from './NodeDetailModal';
+import { checkpointStatus } from '@/lib/degree/checkpoints';
+
+interface CheckpointResultRow {
+  checkpointId: string;
+  passed: boolean;
+  requiresHumanReview: boolean;
+  submittedAt: string;
+}
 
 interface DegreeGraphProps {
   knowledgeState: Record<string, number>;
+  checkpointResults?: CheckpointResultRow[];
   readOnly?: boolean; // professor viewing a student — no session navigation
 }
 
@@ -89,7 +98,7 @@ function BubbleNode({ data }: NodeProps) {
 
 const nodeTypes = { bubble: BubbleNode };
 
-export default function DegreeGraph({ knowledgeState: ks, readOnly = false }: DegreeGraphProps) {
+export default function DegreeGraph({ knowledgeState: ks, checkpointResults = [], readOnly = false }: DegreeGraphProps) {
   const router = useRouter();
   const [view, setView] = useState<View>({ level: 'courses' });
   const [highlightId, setHighlightId] = useState<string | null>(null);
@@ -218,6 +227,14 @@ export default function DegreeGraph({ knowledgeState: ks, readOnly = false }: De
       description: course.description,
       masteryPct: m.pct,
       unlocked: isCourseUnlocked(courseId, ks),
+      checkpoints: course.nodes.flatMap((n) =>
+        n.checkpoints.map((cp) => ({
+          id: cp.id,
+          title: n.title,
+          type: cp.type,
+          status: checkpointStatus(checkpointResults, cp.id),
+        }))
+      ),
       prereqs: coursePrereqIds(courseId).map((id) => ({
         id,
         title: getCourse(id)?.title ?? id,
@@ -250,6 +267,12 @@ export default function DegreeGraph({ knowledgeState: ks, readOnly = false }: De
       masteryPct: m.pct,
       unlocked,
       estimatedHours: node.estimatedHours,
+      checkpoints: node.checkpoints.map((cp) => ({
+        id: cp.id,
+        title: cp.type === 'oral' ? 'Oral checkpoint' : cp.type === 'code' ? 'Code submission' : cp.type === 'problem_set' ? 'Problem set' : 'Written response',
+        type: cp.type,
+        status: checkpointStatus(checkpointResults, cp.id),
+      })),
       prereqs: conceptPrereqIds(nodeId).map((id) => ({
         id,
         title: getConcept(id)?.title ?? id,

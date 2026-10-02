@@ -25,9 +25,10 @@ export default async function DashboardPage({
   const targetId = professor && searchParams.studentId ? searchParams.studentId : viewerId;
   const isViewingOther = targetId !== viewerId;
 
-  const [student, knowledgeStates, allStudents] = await Promise.all([
+  const [student, knowledgeStates, checkpointRows, allStudents] = await Promise.all([
     prisma.student.findUnique({ where: { id: targetId } }),
     prisma.knowledgeState.findMany({ where: { studentId: targetId } }),
+    prisma.checkpointResult.findMany({ where: { studentId: targetId } }),
     professor
       ? prisma.student.findMany({
           where: { role: 'student' },
@@ -41,6 +42,13 @@ export default async function DashboardPage({
 
   const knowledgeState: Record<string, number> = {};
   knowledgeStates.forEach((ks) => { knowledgeState[ks.nodeId] = ks.level; });
+
+  const checkpointResults = checkpointRows.map((r) => ({
+    checkpointId: r.checkpointId,
+    passed: r.passed,
+    requiresHumanReview: r.requiresHumanReview,
+    submittedAt: r.submittedAt.toISOString(),
+  }));
 
   const allNodes = getAllNodes();
   const mastered = allNodes.filter((n) => (knowledgeState[n.id] ?? 0) >= 4).length;
@@ -176,7 +184,7 @@ export default async function DashboardPage({
 
         {/* Main graph area */}
         <main className="flex-1 min-w-0">
-          <DegreeGraphClient knowledgeState={knowledgeState} readOnly={isViewingOther} />
+          <DegreeGraphClient knowledgeState={knowledgeState} checkpointResults={checkpointResults} readOnly={isViewingOther} />
         </main>
       </div>
       {!isViewingOther && (

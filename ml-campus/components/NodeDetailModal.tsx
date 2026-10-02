@@ -6,6 +6,13 @@ interface DepItem {
   mastered: boolean;
 }
 
+export interface CheckpointRow {
+  id: string;
+  title: string;
+  type: string;
+  status: 'passed' | 'pending' | 'failed' | 'todo';
+}
+
 export interface NodeDetail {
   kind: 'course' | 'concept';
   id: string;
@@ -17,10 +24,18 @@ export interface NodeDetail {
   prereqs: DepItem[];
   dependents: DepItem[];
   estimatedHours?: number;
+  checkpoints?: CheckpointRow[];
   // Primary action
   actionLabel?: string;
   onAction?: () => void;
 }
+
+const CP_STATUS: Record<string, { label: string; cls: string }> = {
+  passed: { label: 'Passed', cls: 'bg-green-900 text-green-300' },
+  pending: { label: 'Pending', cls: 'bg-yellow-900 text-yellow-300' },
+  failed: { label: 'Retry', cls: 'bg-red-900 text-red-300' },
+  todo: { label: 'To do', cls: 'bg-gray-800 text-gray-400' },
+};
 
 export default function NodeDetailModal({
   detail,
@@ -121,6 +136,35 @@ export default function NodeDetailModal({
             )}
           </div>
         </div>
+
+        {/* Checkpoints */}
+        {detail.checkpoints && detail.checkpoints.length > 0 && (
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+              Checkpoints ({detail.checkpoints.filter((c) => c.status === 'passed').length}/
+              {detail.checkpoints.length} passed)
+            </p>
+            <ul className="space-y-1.5 max-h-44 overflow-y-auto">
+              {detail.checkpoints.map((cp) => {
+                const meta = CP_STATUS[cp.status];
+                return (
+                  <li
+                    key={cp.id}
+                    className="flex items-center justify-between bg-gray-800 border border-gray-700 rounded-lg px-3 py-2"
+                  >
+                    <span className="text-xs text-gray-300 truncate">
+                      {cp.title}
+                      <span className="text-gray-600 ml-1.5 capitalize">· {cp.type.replace('_', ' ')}</span>
+                    </span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium shrink-0 ml-2 ${meta.cls}`}>
+                      {meta.label}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
 
         {/* Action */}
         {detail.actionLabel && detail.onAction && (

@@ -51,7 +51,7 @@ interface ResultRow {
 }
 
 /** Latest result per checkpoint → status. */
-function statusFor(results: ResultRow[], checkpointId: string): CheckpointStatus {
+export function checkpointStatus(results: ResultRow[], checkpointId: string): CheckpointStatus {
   const matching = results
     .filter((r) => r.checkpointId === checkpointId)
     .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
@@ -60,6 +60,10 @@ function statusFor(results: ResultRow[], checkpointId: string): CheckpointStatus
   if (latest.passed) return 'passed';
   if (latest.requiresHumanReview) return 'pending';
   return 'failed';
+}
+
+function statusFor(results: ResultRow[], checkpointId: string): CheckpointStatus {
+  return checkpointStatus(results, checkpointId);
 }
 
 /** All checkpoints grouped by course, each tagged with the student's status. */

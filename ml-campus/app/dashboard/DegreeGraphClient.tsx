@@ -4,11 +4,25 @@ import dynamic from 'next/dynamic';
 
 const DegreeGraph = dynamic(() => import('@/components/DegreeGraph'), { ssr: false });
 
+interface CheckpointResultRow {
+  checkpointId: string;
+  passed: boolean;
+  requiresHumanReview: boolean;
+  submittedAt: string;
+}
+
 interface Props {
   knowledgeState: Record<string, number>;
+  checkpointResults?: CheckpointResultRow[];
   readOnly?: boolean;
 }
 
-export default function DegreeGraphClient({ knowledgeState, readOnly }: Props) {
-  return <DegreeGraph knowledgeState={knowledgeState} readOnly={readOnly} />;
+export default function DegreeGraphClient({ knowledgeState, checkpointResults, readOnly }: Props) {
+  return (
+    <DegreeGraph
+      knowledgeState={knowledgeState}
+      checkpointResults={checkpointResults}
+      readOnly={readOnly}
+    />
+  );
 }
