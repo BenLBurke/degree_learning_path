@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import BrandLogo from '@/components/BrandLogo';
 import { mitCurriculum } from '@/lib/degree/mitCurriculum';
 
 export default function Home() {
@@ -9,7 +10,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-950 text-white">
       {/* Nav */}
       <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
-        <span className="text-xl font-bold">ML Campus</span>
+        <BrandLogo />
         <div className="flex items-center gap-4">
           <Link href="/login" className="text-sm text-gray-400 hover:text-white transition-colors">
             Sign in

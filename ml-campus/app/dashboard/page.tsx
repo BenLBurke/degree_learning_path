@@ -8,6 +8,7 @@ import { PROGRAMS, getProgram } from '@/lib/degree/programs';
 import DegreeGraphClient from './DegreeGraphClient';
 import CopilotSidecarWrapper from '@/components/CopilotSidecarWrapper';
 import StudentPicker from './StudentPicker';
+import BrandLogo from '@/components/BrandLogo';
 import { getCurrentProfessor } from '@/lib/auth/roles';
 import Link from 'next/link';
 
@@ -81,7 +82,7 @@ export default async function DashboardPage({
       {/* Top nav */}
       <nav className="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-xl font-bold text-white">ML Campus</span>
+          <BrandLogo />
           <span className="text-gray-600">/</span>
           <span className="text-gray-400">Dashboard</span>
         </div>

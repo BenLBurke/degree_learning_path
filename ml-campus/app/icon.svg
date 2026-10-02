@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="ML Campus">
+  <rect width="48" height="48" rx="10" fill="#0b2a4a"/>
+  <path d="M24 13 L39 20 L24 27 L9 20 Z" fill="#ffffff"/>
+  <path d="M16 23 v6 c0 2.8 3.6 5 8 5 s8 -2.2 8 -5 v-6 l-8 3.7 Z" fill="#ffffff" opacity="0.85"/>
+  <rect x="38" y="20" width="1.6" height="9" rx="0.8" fill="#ffffff"/>
+  <circle cx="38.8" cy="30.5" r="1.8" fill="#ffffff"/>
+</svg>

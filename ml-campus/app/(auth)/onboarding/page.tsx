@@ -95,6 +95,12 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg">
         {/* Progress bar */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <img src="/byui-logo.svg" alt="BYU-Idaho" width={32} height={32} />
+          <span className="text-xl font-bold text-white">ML Campus</span>
+        </div>
+
+        {/* Progress bar */}
         <div className="flex gap-2 mb-8">
           {[1, 2, 3].map((s) => (
             <div
