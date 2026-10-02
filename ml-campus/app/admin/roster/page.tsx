@@ -54,17 +54,21 @@ export default async function RosterPage() {
               return (
                 <tr key={s.id} className="border-b border-gray-800/50 last:border-0 hover:bg-gray-800/30">
                   <td className="px-5 py-3">
-                    <Link href={`/dashboard?studentId=${s.id}`} className="group block">
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-200 font-medium group-hover:text-indigo-300">{s.name}</span>
-                        {pendingByStudent[s.id] ? (
-                          <span className="text-[11px] font-semibold bg-red-600 text-white px-1.5 py-0.5 rounded-full">
-                            {pendingByStudent[s.id]} pending review
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="text-gray-600 text-xs">{s.email}</div>
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/dashboard?studentId=${s.id}`} className="group block min-w-0">
+                        <div className="text-gray-200 font-medium group-hover:text-indigo-300 truncate">{s.name}</div>
+                        <div className="text-gray-600 text-xs truncate">{s.email}</div>
+                      </Link>
+                      {pendingByStudent[s.id] ? (
+                        <Link
+                          href="/admin"
+                          className="text-[11px] font-semibold bg-red-600 hover:bg-red-500 text-white px-1.5 py-0.5 rounded-full shrink-0"
+                          title="Go to review queue"
+                        >
+                          {pendingByStudent[s.id]} pending review
+                        </Link>
+                      ) : null}
+                    </div>
                   </td>
                   <td className="px-5 py-3">
                     <span className={`text-xs px-2 py-0.5 rounded-full ${

@@ -94,9 +94,14 @@ export default async function DashboardPage({
             Viewing <span className="font-semibold">{student.name}</span>&apos;s progress ·{' '}
             <span className="text-indigo-400">read-only</span>
           </p>
-          <Link href="/dashboard" className="text-sm text-indigo-400 hover:text-indigo-300">
+          <div className="flex items-center gap-4">
+            <Link href={`/checkpoints?studentId=${targetId}`} className="text-sm text-indigo-400 hover:text-indigo-300">
+              View checkpoints
+            </Link>
+            <Link href="/dashboard" className="text-sm text-indigo-400 hover:text-indigo-300">
             Back to my dashboard
           </Link>
+          </div>
         </div>
       )}
 
