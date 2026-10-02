@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/prisma';
 import { getAllNodes, getNextRecommendedNodes } from '@/lib/agent/pathfinder';
 import { mitCurriculum } from '@/lib/degree/mitCurriculum';
+import { PROGRAMS, getProgram } from '@/lib/degree/programs';
 import DegreeGraphClient from './DegreeGraphClient';
 import CopilotSidecarWrapper from '@/components/CopilotSidecarWrapper';
 import StudentPicker from './StudentPicker';
@@ -13,13 +14,16 @@ import Link from 'next/link';
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: { studentId?: string };
+  searchParams: { studentId?: string; program?: string };
 }) {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect('/login');
 
   const viewerId = (session.user as any).id as string;
   const professor = await getCurrentProfessor();
+
+  const program = getProgram(searchParams.program);
+  const programCourseIds = new Set(program.courseIds);
 
   // A professor may inspect another student's dashboard read-only via ?studentId.
   const targetId = professor && searchParams.studentId ? searchParams.studentId : viewerId;
@@ -53,14 +57,23 @@ export default async function DashboardPage({
     submittedAt: r.submittedAt.toISOString(),
   }));
 
-  const allNodes = getAllNodes();
+  const allNodes = getAllNodes().filter((n) => programCourseIds.has(n.courseId));
   const mastered = allNodes.filter((n) => (knowledgeState[n.id] ?? 0) >= 4).length;
   const inProgress = allNodes.filter((n) => { const l = knowledgeState[n.id] ?? 0; return l >= 1 && l < 4; }).length;
   const total = allNodes.length;
-  const pct = Math.round((mastered / total) * 100);
+  const pct = total ? Math.round((mastered / total) * 100) : 0;
 
-  const recommended = getNextRecommendedNodes(knowledgeState, student.goals ?? '').slice(0, 3);
-  const recommendedNodes = recommended.map((id) => allNodes.find((n) => n.id === id)).filter(Boolean);
+  const recommended = getNextRecommendedNodes(knowledgeState, student.goals ?? '');
+  const recommendedNodes = recommended
+    .map((id) => allNodes.find((n) => n.id === id))
+    .filter(Boolean)
+    .slice(0, 3);
+
+  const programCourses = mitCurriculum.courses.filter((c) => programCourseIds.has(c.id));
+
+  // Preserve studentId when switching programs.
+  const programHref = (pid: string) =>
+    isViewingOther ? `/dashboard?studentId=${targetId}&program=${pid}` : `/dashboard?program=${pid}`;
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -98,6 +111,26 @@ export default async function DashboardPage({
         </div>
       </nav>
 
+      {/* Program tabs */}
+      <div className="border-b border-gray-800 px-6 flex items-center gap-1">
+        {PROGRAMS.map((p) => {
+          const active = p.id === program.id;
+          return (
+            <Link
+              key={p.id}
+              href={programHref(p.id)}
+              className={`px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                active
+                  ? 'border-indigo-500 text-white'
+                  : 'border-transparent text-gray-500 hover:text-gray-300'
+              }`}
+            >
+              {p.title}
+            </Link>
+          );
+        })}
+      </div>
+
       {/* Read-only banner when a professor inspects a student */}
       {isViewingOther && (
         <div className="bg-indigo-950/60 border-b border-indigo-900 px-6 py-2.5 flex items-center justify-between">
@@ -116,7 +149,7 @@ export default async function DashboardPage({
         </div>
       )}
 
-      <div className="flex h-[calc(100vh-57px)]">
+      <div className="flex h-[calc(100vh-106px)]">
         {/* Left sidebar */}
         <aside className="w-72 border-r border-gray-800 p-6 flex flex-col gap-6 overflow-y-auto shrink-0">
           <div>
@@ -165,7 +198,7 @@ export default async function DashboardPage({
           <div>
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Courses</h3>
             <div className="space-y-2">
-              {mitCurriculum.courses.map((course) => {
+              {programCourses.map((course) => {
                 const levels = course.nodes.map((n) => knowledgeState[n.id] ?? 0);
                 const avg = levels.reduce((a, b) => a + b, 0) / levels.length;
                 const coursePct = Math.round((avg / 4) * 100);
@@ -187,7 +220,7 @@ export default async function DashboardPage({
 
         {/* Main graph area */}
         <main className="flex-1 min-w-0">
-          <DegreeGraphClient knowledgeState={knowledgeState} checkpointResults={checkpointResults} readOnly={isViewingOther} />
+          <DegreeGraphClient knowledgeState={knowledgeState} checkpointResults={checkpointResults} courseIds={program.courseIds} readOnly={isViewingOther} />
         </main>
       </div>
       {!isViewingOther && (

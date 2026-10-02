@@ -45,6 +45,7 @@ interface CheckpointResultRow {
 interface DegreeGraphProps {
   knowledgeState: Record<string, number>;
   checkpointResults?: CheckpointResultRow[];
+  courseIds?: string[]; // limit the course view to one program's courses
   readOnly?: boolean; // professor viewing a student — no session navigation
 }
 
@@ -101,7 +102,7 @@ function BubbleNode({ data }: NodeProps) {
 
 const nodeTypes = { bubble: BubbleNode };
 
-export default function DegreeGraph({ knowledgeState: ks, checkpointResults = [], readOnly = false }: DegreeGraphProps) {
+export default function DegreeGraph({ knowledgeState: ks, checkpointResults = [], courseIds, readOnly = false }: DegreeGraphProps) {
   const router = useRouter();
   const [view, setView] = useState<View>({ level: 'courses' });
   const [highlightId, setHighlightId] = useState<string | null>(null);
@@ -113,7 +114,11 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
     const edges: Edge[] = [];
 
     if (view.level === 'courses') {
-      mitCurriculum.courses.forEach((course, i) => {
+      const courseSet = courseIds ? new Set(courseIds) : null;
+      const courses = courseSet
+        ? mitCurriculum.courses.filter((c) => courseSet.has(c.id))
+        : mitCurriculum.courses;
+      courses.forEach((course, i) => {
         const m = courseMastery(course.id, ks);
         const unlocked = isCourseUnlocked(course.id, ks);
         const col = i % 4;
@@ -132,6 +137,7 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
         });
       });
       for (const e of courseEdges()) {
+        if (courseSet && (!courseSet.has(e.source) || !courseSet.has(e.target))) continue;
         edges.push({ id: `${e.source}->${e.target}`, source: e.source, target: e.target });
       }
     } else {
@@ -163,7 +169,7 @@ export default function DegreeGraph({ knowledgeState: ks, checkpointResults = []
     }
     return { nodes, edges };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, ks]);
+  }, [view, ks, courseIds]);
 
   // Apply highlight styling derived from highlightId.
   const { styledNodes, styledEdges } = useMemo(() => {

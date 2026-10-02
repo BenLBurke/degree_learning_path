@@ -3,6 +3,7 @@ import { authOptions } from '@/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db/prisma';
 import { checkpointsByCourse } from '@/lib/degree/checkpoints';
+import { getProgram, PROGRAMS } from '@/lib/degree/programs';
 import { getCurrentProfessor } from '@/lib/auth/roles';
 import CheckpointList from '@/components/CheckpointList';
 import Link from 'next/link';
@@ -10,13 +11,16 @@ import Link from 'next/link';
 export default async function CheckpointsPage({
   searchParams,
 }: {
-  searchParams: { studentId?: string };
+  searchParams: { studentId?: string; program?: string };
 }) {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect('/login');
 
   const viewerId = (session.user as any).id as string;
   const professor = await getCurrentProfessor();
+
+  const program = getProgram(searchParams.program);
+  const programCourseIds = new Set(program.courseIds);
 
   // A professor may inspect another student's checkpoints read-only via ?studentId.
   const targetId = professor && searchParams.studentId ? searchParams.studentId : viewerId;
@@ -28,11 +32,13 @@ export default async function CheckpointsPage({
   ]);
   if (!student) redirect('/checkpoints');
 
-  const courses = checkpointsByCourse(results);
+  const courses = checkpointsByCourse(results).filter((c) => programCourseIds.has(c.courseId));
   const all = courses.flatMap((c) => c.checkpoints);
   const passed = all.filter((c) => c.status === 'passed').length;
 
   const backHref = isViewingOther ? `/dashboard?studentId=${targetId}` : '/dashboard';
+  const programHref = (pid: string) =>
+    isViewingOther ? `/checkpoints?studentId=${targetId}&program=${pid}` : `/checkpoints?program=${pid}`;
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -59,12 +65,31 @@ export default async function CheckpointsPage({
       )}
 
       <div className="max-w-3xl mx-auto px-6 py-8">
+        {/* Program tabs */}
+        <div className="flex items-center gap-1 border-b border-gray-800 mb-6">
+          {PROGRAMS.map((p) => {
+            const active = p.id === program.id;
+            return (
+              <Link
+                key={p.id}
+                href={programHref(p.id)}
+                className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                  active ? 'border-indigo-500 text-white' : 'border-transparent text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                {p.title}
+              </Link>
+            );
+          })}
+        </div>
+
         <div className="mb-6">
           <h1 className="text-2xl font-bold">
             {isViewingOther ? `${student.name}'s Checkpoints` : 'My Checkpoints'}
+            <span className="text-gray-500 font-normal"> · {program.title}</span>
           </h1>
           <p className="text-gray-400 text-sm mt-1">
-            {passed} of {all.length} checkpoints passed across all courses.
+            {passed} of {all.length} checkpoints passed in this program.
           </p>
         </div>
         <CheckpointList courses={courses} canAttempt={!isViewingOther} canResolve={isViewingOther} />

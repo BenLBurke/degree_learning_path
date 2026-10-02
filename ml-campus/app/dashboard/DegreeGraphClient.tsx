@@ -17,14 +17,16 @@ interface CheckpointResultRow {
 interface Props {
   knowledgeState: Record<string, number>;
   checkpointResults?: CheckpointResultRow[];
+  courseIds?: string[];
   readOnly?: boolean;
 }
 
-export default function DegreeGraphClient({ knowledgeState, checkpointResults, readOnly }: Props) {
+export default function DegreeGraphClient({ knowledgeState, checkpointResults, courseIds, readOnly }: Props) {
   return (
     <DegreeGraph
       knowledgeState={knowledgeState}
       checkpointResults={checkpointResults}
+      courseIds={courseIds}
       readOnly={readOnly}
     />
   );

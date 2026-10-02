@@ -1136,7 +1136,7 @@ const supplyChain: Course = {
       title: 'Supply Chain Analytics',
       description:
         'Statistics, regression, optimization (shortest path, TSP, vehicle routing, mixed-integer programming), simulation, and queuing theory (MITx CTL.SC0x).',
-      prerequisites: ['probability-foundations'],
+      prerequisites: [],
       estimatedHours: 14,
       content: [
         { type: 'text', content: 'Analytics turns supply chain decisions into models: hypothesis testing and regression for understanding data, and optimization for prescriptive decisions.' },
@@ -1191,7 +1191,7 @@ const supplyChain: Course = {
       title: 'Supply Chain Technology & Systems',
       description:
         'The CRISP-DM data process, data modeling, machine learning in supply chains, warehouse optimization, and enterprise systems (WMS, TMS, APS, MPS) (MITx CTL.SC4x).',
-      prerequisites: ['sc-analytics', 'ml-fundamentals'],
+      prerequisites: ['sc-analytics'],
       estimatedHours: 12,
       content: [
         { type: 'text', content: 'Modern supply chains run on software and data. The CRISP-DM framework structures data projects; WMS, TMS, APS, and MPS systems execute warehouse, transportation, planning, and scheduling.' },
