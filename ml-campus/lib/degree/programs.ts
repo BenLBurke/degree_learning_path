@@ -30,8 +30,15 @@ export const PROGRAMS: Program[] = [
   {
     id: 'supply-chain',
     title: 'Supply Chain',
-    description: 'MITx Supply Chain Management (CTL.SC0x–SC4x) track.',
-    courseIds: ['supply-chain'],
+    description: 'MITx Supply Chain Management (CTL.SC0x–SC4x) degree.',
+    courseIds: [
+      'scm-fundamentals',
+      'scm-analytics',
+      'scm-design',
+      'scm-dynamics',
+      'scm-technology',
+      'scm-capstone',
+    ],
   },
 ];
 

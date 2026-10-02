@@ -1101,121 +1101,388 @@ const capstone: Course = {
   ],
 };
 
-// ---------------------------------------------------------------------------
-// Course 11 — Supply Chain Management (MITx CTL.SCx MicroMasters)
-// ---------------------------------------------------------------------------
-const supplyChain: Course = {
-  id: 'supply-chain',
-  title: 'Supply Chain Management',
-  mitEquivalent: 'MITx CTL.SC0x–SC4x',
+// ===========================================================================
+// SUPPLY CHAIN MANAGEMENT DEGREE (MITx CTL.SCx MicroMasters — SC0x..SC4x + capstone)
+// A separate degree: its own courses, each a graph of concept nodes.
+// ===========================================================================
+
+// --- SC Course 1: Supply Chain Fundamentals (CTL.SC1x) ---------------------
+const scmFundamentals: Course = {
+  id: 'scm-fundamentals',
+  title: 'Supply Chain Fundamentals',
+  mitEquivalent: 'MITx CTL.SC1x',
   description:
-    'The MITx Supply Chain Management track: fundamentals, analytics, network design, system dynamics, and the technology that runs modern supply chains.',
+    'The building blocks of supply chains: logistics systems, demand forecasting, inventory management, and transportation.',
   nodes: [
     {
-      id: 'sc-fundamentals',
-      courseId: 'supply-chain',
-      title: 'Supply Chain Fundamentals',
-      description:
-        'Demand forecasting, inventory management across single and multiple periods, and transportation basics (MITx CTL.SC1x).',
+      id: 'scf-logistics', courseId: 'scm-fundamentals', title: 'Logistics & Supply Chain Systems', estimatedHours: 8,
+      description: 'What a supply chain is, the cost-vs-service trade-off, and how sourcing, production, inventory, and transport fit together.',
       prerequisites: [],
-      estimatedHours: 12,
       content: [
-        { type: 'text', content: 'A supply chain balances supply and demand across sourcing, production, inventory, and transportation. The core trade-off is cost versus service level.' },
-        { type: 'text', content: 'Demand forecasting (moving averages, exponential smoothing) feeds inventory policy. The EOQ model and safety stock set how much to order and how much buffer to hold against variability.' },
-        { type: 'link', content: 'MITx CTL.SC1x — Supply Chain Fundamentals (MicroMasters in Supply Chain Management).' },
-        { type: 'problem', content: 'Given weekly demand ~ Normal(mean 100, sd 20), lead time 2 weeks, and a 95% service level, compute the safety stock and reorder point.' },
+        { type: 'text', content: 'A supply chain is the network that moves material, information, and money from raw materials to the end customer. Every design balances total cost against customer service level.' },
+        { type: 'link', content: 'MITx CTL.SC1x — Supply Chain Fundamentals.' },
       ],
       checkpoints: [
-        { id: 'cp-sc-fundamentals-1', nodeId: 'sc-fundamentals', type: 'problem_set', prompt: 'Compute EOQ for annual demand 10,000 units, ordering cost $50, holding cost $2/unit/yr. Then compute the reorder point for a 1-week lead time and 50 units/week demand.', passingCriteria: 'EOQ ≈ 707 units and reorder point = 50 units, with correct formulas shown.', requiresHumanReview: false },
-        { id: 'cp-sc-fundamentals-2', nodeId: 'sc-fundamentals', type: 'written', prompt: 'Explain the cost-vs-service-level trade-off and how safety stock mediates it.', passingCriteria: 'Student connects higher safety stock to higher holding cost but better service / fewer stockouts.', requiresHumanReview: false },
+        { id: 'cp-scf-logistics-1', nodeId: 'scf-logistics', type: 'written', prompt: 'Describe the cost-vs-service-level trade-off with a concrete example.', passingCriteria: 'Student links lower cost to lower service (or vice versa) with a realistic example.', requiresHumanReview: false },
       ],
     },
     {
-      id: 'sc-analytics',
-      courseId: 'supply-chain',
-      title: 'Supply Chain Analytics',
-      description:
-        'Statistics, regression, optimization (shortest path, TSP, vehicle routing, mixed-integer programming), simulation, and queuing theory (MITx CTL.SC0x).',
-      prerequisites: [],
-      estimatedHours: 14,
+      id: 'scf-forecasting', courseId: 'scm-fundamentals', title: 'Demand Forecasting', estimatedHours: 10,
+      description: 'Time-series forecasting with moving averages and exponential smoothing, and measuring forecast error.',
+      prerequisites: ['scf-logistics'],
       content: [
-        { type: 'text', content: 'Analytics turns supply chain decisions into models: hypothesis testing and regression for understanding data, and optimization for prescriptive decisions.' },
-        { type: 'text', content: 'Network and routing problems — shortest path, the traveling salesman problem, and vehicle routing — are formulated as (often mixed-integer) linear programs. Discrete-event simulation and queuing theory handle variability and congestion.' },
+        { type: 'text', content: 'Forecasting turns demand history into a prediction. Moving averages and exponential smoothing are the workhorses; error metrics like MAD and MAPE measure accuracy and bias.' },
+        { type: 'problem', content: 'Given demand 100, 120, 110, 130, compute a 3-period moving average forecast for the next period.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scf-forecasting-1', nodeId: 'scf-forecasting', type: 'problem_set', prompt: 'Compute a simple exponential smoothing forecast (alpha=0.3) for the series 100, 120, 110 starting from an initial forecast of 100.', passingCriteria: 'Correct recursive application of the smoothing formula.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'scf-eoq', courseId: 'scm-fundamentals', title: 'Inventory: EOQ & Ordering', estimatedHours: 10,
+      description: 'The Economic Order Quantity model and the trade-off between ordering and holding costs.',
+      prerequisites: ['scf-forecasting'],
+      content: [
+        { type: 'text', content: 'EOQ = sqrt(2DS/H) minimizes the sum of ordering cost (S per order) and holding cost (H per unit per year) for annual demand D.' },
+        { type: 'problem', content: 'Compute EOQ for D=10,000, S=$50, H=$2/unit/yr.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scf-eoq-1', nodeId: 'scf-eoq', type: 'problem_set', prompt: 'Compute the EOQ for annual demand 10,000, ordering cost $50, holding cost $2/unit/yr, and the number of orders per year.', passingCriteria: 'EOQ ≈ 707 units and ≈ 14 orders/yr, with the formula shown.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'scf-safety-stock', courseId: 'scm-fundamentals', title: 'Safety Stock & Service Levels', estimatedHours: 9,
+      description: 'Buffering against demand and lead-time variability to hit a target service level.',
+      prerequisites: ['scf-eoq'],
+      content: [
+        { type: 'text', content: 'Safety stock = z * sigma_DL, where z comes from the target service level and sigma_DL is the standard deviation of demand over lead time. It sets the reorder point above average lead-time demand.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scf-safety-stock-1', nodeId: 'scf-safety-stock', type: 'problem_set', prompt: 'Weekly demand ~ N(100, 20), lead time 2 weeks, 95% service level. Compute safety stock and reorder point.', passingCriteria: 'Correct sigma over lead time, z≈1.645, safety stock ≈ 47, reorder point ≈ 247.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'scf-transport', courseId: 'scm-fundamentals', title: 'Transportation Management', estimatedHours: 8,
+      description: 'Modes, cost structures, and the trade-offs of consolidation and shipment size.',
+      prerequisites: ['scf-safety-stock'],
+      content: [
+        { type: 'text', content: 'Transportation choices trade speed against cost: parcel, LTL, FTL, rail, ocean, air. Consolidation lowers per-unit cost but raises lead time and inventory.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scf-transport-1', nodeId: 'scf-transport', type: 'written', prompt: 'When would you ship LTL instead of FTL, and what is the trade-off?', passingCriteria: 'Student connects shipment size and consolidation to per-unit cost vs speed/inventory.', requiresHumanReview: false },
+      ],
+    },
+  ],
+};
+
+// --- SC Course 2: Supply Chain Analytics (CTL.SC0x) ------------------------
+const scmAnalytics: Course = {
+  id: 'scm-analytics',
+  title: 'Supply Chain Analytics',
+  mitEquivalent: 'MITx CTL.SC0x',
+  description:
+    'The quantitative toolkit: probability and statistics, regression, optimization, and simulation for supply chain decisions.',
+  nodes: [
+    {
+      id: 'sca-stats', courseId: 'scm-analytics', title: 'Probability & Statistics', estimatedHours: 10,
+      description: 'Random variables, distributions, and summary statistics underpinning demand and lead-time models.',
+      prerequisites: [],
+      content: [
+        { type: 'text', content: 'Supply chain variability is modeled with random variables and distributions (normal, Poisson). Mean and variance summarize demand; the normal distribution drives safety-stock math.' },
         { type: 'link', content: 'MITx CTL.SC0x — Supply Chain Analytics.' },
-        { type: 'problem', content: 'Formulate the assignment of 3 trucks to 3 routes with given costs as a linear program and state its objective and constraints.' },
       ],
       checkpoints: [
-        { id: 'cp-sc-analytics-1', nodeId: 'sc-analytics', type: 'problem_set', prompt: 'Write the LP formulation (decision variables, objective, constraints) for a shortest-path problem on a small 4-node network you define.', passingCriteria: 'Correct flow-conservation constraints, binary/continuous variables, and a minimize-cost objective.', requiresHumanReview: false },
-        { id: 'cp-sc-analytics-2', nodeId: 'sc-analytics', type: 'written', prompt: 'When would you use discrete-event simulation instead of a closed-form queuing formula?', passingCriteria: 'Student notes simulation suits complex, non-analytical systems with interacting variability.', requiresHumanReview: true },
+        { id: 'cp-sca-stats-1', nodeId: 'sca-stats', type: 'problem_set', prompt: 'For demand ~ N(500, 50), what is the probability demand exceeds 600? Use the standard normal.', passingCriteria: 'z=2.0, P ≈ 0.023 with correct reasoning.', requiresHumanReview: false },
       ],
     },
     {
-      id: 'sc-design',
-      courseId: 'supply-chain',
-      title: 'Supply Chain Design',
-      description:
-        'Network design and facility location, omni-channel distribution, production planning, S&OP, sourcing/procurement, and supply chain finance (MITx CTL.SC2x).',
-      prerequisites: ['sc-fundamentals', 'sc-analytics'],
-      estimatedHours: 14,
+      id: 'sca-regression', courseId: 'scm-analytics', title: 'Regression & Hypothesis Testing', estimatedHours: 10,
+      description: 'Linear regression, p-values, and testing relationships in supply chain data.',
+      prerequisites: ['sca-stats'],
       content: [
-        { type: 'text', content: 'Design decisions set the physical and financial structure of the chain: how many facilities, where to locate them, how to serve channels, and how to source materials.' },
-        { type: 'text', content: 'Facility location is a classic optimization: trade off fixed facility costs against transportation and service. Sales & Operations Planning (S&OP) aligns demand and supply plans across the business.' },
+        { type: 'text', content: 'Regression fits a line (or plane) to data to explain and predict; hypothesis testing and p-values judge whether a relationship is real or noise.' },
+      ],
+      checkpoints: [
+        { id: 'cp-sca-regression-1', nodeId: 'sca-regression', type: 'written', prompt: 'Interpret a regression coefficient and its p-value for "price → weekly demand".', passingCriteria: 'Student explains the slope as marginal effect and the p-value as significance.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'sca-optimization', courseId: 'scm-analytics', title: 'Deterministic Optimization', estimatedHours: 12,
+      description: 'Linear programming and network optimization such as shortest-path and transportation problems.',
+      prerequisites: ['sca-regression'],
+      content: [
+        { type: 'text', content: 'Linear programs minimize/maximize a linear objective under linear constraints. Shortest-path and transportation problems are network LPs solved at scale with the simplex or interior-point methods.' },
+        { type: 'problem', content: 'Formulate a minimize-cost transportation problem for 2 plants and 3 warehouses with given supplies, demands, and unit costs.' },
+      ],
+      checkpoints: [
+        { id: 'cp-sca-optimization-1', nodeId: 'sca-optimization', type: 'problem_set', prompt: 'Write the LP (variables, objective, constraints) for a shortest-path problem on a 4-node network you define.', passingCriteria: 'Correct flow-conservation constraints and a minimize-cost objective.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'sca-integer-opt', courseId: 'scm-analytics', title: 'Integer & Combinatorial Optimization', estimatedHours: 12,
+      description: 'Mixed-integer programming, the traveling salesman problem, and vehicle routing.',
+      prerequisites: ['sca-optimization'],
+      content: [
+        { type: 'text', content: 'When decisions are discrete (build/do not build, visit/skip), problems become mixed-integer programs. The TSP and vehicle routing problem are canonical and NP-hard, solved with branch-and-bound and heuristics.' },
+      ],
+      checkpoints: [
+        { id: 'cp-sca-integer-opt-1', nodeId: 'sca-integer-opt', type: 'written', prompt: 'Why is the traveling salesman problem harder than a shortest-path problem?', passingCriteria: 'Student notes the combinatorial explosion of tours / integer constraints vs a polynomial LP.', requiresHumanReview: true },
+      ],
+    },
+    {
+      id: 'sca-simulation', courseId: 'scm-analytics', title: 'Simulation & Queuing', estimatedHours: 10,
+      description: 'Discrete-event simulation and queuing theory for systems with variability and congestion.',
+      prerequisites: ['sca-integer-opt'],
+      content: [
+        { type: 'text', content: 'When a system is too complex for closed-form math, discrete-event simulation reproduces its behavior over time. Queuing theory gives analytic results for waiting lines under simpler assumptions.' },
+      ],
+      checkpoints: [
+        { id: 'cp-sca-simulation-1', nodeId: 'sca-simulation', type: 'written', prompt: 'When should you simulate instead of using a queuing formula?', passingCriteria: 'Student notes simulation suits complex, interacting, non-analytical systems.', requiresHumanReview: true },
+      ],
+    },
+  ],
+};
+
+// --- SC Course 3: Supply Chain Design (CTL.SC2x) ---------------------------
+const scmDesign: Course = {
+  id: 'scm-design',
+  title: 'Supply Chain Design',
+  mitEquivalent: 'MITx CTL.SC2x',
+  description:
+    'Structuring the chain: network and facility design, channel strategy, planning, sourcing, and finance.',
+  nodes: [
+    {
+      id: 'scd-network', courseId: 'scm-design', title: 'Network Design & Facility Location', estimatedHours: 12,
+      description: 'Deciding how many facilities to operate and where, trading fixed cost against transport and service.',
+      prerequisites: ['scf-transport', 'sca-simulation'],
+      content: [
+        { type: 'text', content: 'Facility location optimizes total cost: facility fixed costs vs transportation and service. More facilities cut transport and lead time but raise fixed and inventory cost.' },
         { type: 'link', content: 'MITx CTL.SC2x — Supply Chain Design.' },
       ],
       checkpoints: [
-        { id: 'cp-sc-design-1', nodeId: 'sc-design', type: 'written', prompt: 'A company serves the US from one central warehouse and is considering adding two regional ones. List the costs that rise and fall, and how you would decide.', passingCriteria: 'Student weighs fixed/facility cost increases against transportation and service-level improvements, and proposes an optimization or total-cost comparison.', requiresHumanReview: false },
-        { id: 'cp-sc-design-2', nodeId: 'sc-design', type: 'oral', prompt: 'Explain how S&OP reconciles a demand plan with a constrained supply plan.', passingCriteria: 'Student describes cross-functional alignment of demand, supply, and financial plans on a rolling horizon.', requiresHumanReview: true },
+        { id: 'cp-scd-network-1', nodeId: 'scd-network', type: 'written', prompt: 'A firm serving the US from one DC considers adding two regional DCs. Which costs rise and fall, and how would you decide?', passingCriteria: 'Student weighs fixed/inventory increases against transport and service gains, and proposes a total-cost optimization.', requiresHumanReview: false },
       ],
     },
     {
-      id: 'sc-dynamics',
-      courseId: 'supply-chain',
-      title: 'Supply Chain Dynamics',
-      description:
-        'System dynamics and the bullwhip effect, supply chain strategy, international chains, resilience, and sustainability (MITx CTL.SC3x).',
-      prerequisites: ['sc-design'],
-      estimatedHours: 12,
+      id: 'scd-omnichannel', courseId: 'scm-design', title: 'Omni-Channel Distribution', estimatedHours: 9,
+      description: 'Designing fulfillment across retail, e-commerce, and hybrid channels.',
+      prerequisites: ['scd-network'],
       content: [
-        { type: 'text', content: 'Supply chains are complex feedback systems. The bullwhip effect — demand variability amplifying upstream — is the canonical example of system dynamics driving poor performance.' },
-        { type: 'text', content: 'Strategy, resilience (buffering and flexibility against disruption), and sustainability are increasingly central, especially for international chains exposed to exogenous shocks.' },
+        { type: 'text', content: 'Omni-channel fulfillment must serve stores and direct-to-consumer from shared or dedicated inventory, trading pooling benefits against channel-specific service needs.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scd-omnichannel-1', nodeId: 'scd-omnichannel', type: 'written', prompt: 'Give one advantage and one risk of fulfilling online orders from retail store inventory.', passingCriteria: 'Student names a pooling/speed advantage and a stockout/accuracy risk.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'scd-production', courseId: 'scm-design', title: 'Production Planning & S&OP', estimatedHours: 10,
+      description: 'Aggregate planning and Sales & Operations Planning to align demand and supply.',
+      prerequisites: ['scd-omnichannel'],
+      content: [
+        { type: 'text', content: 'S&OP is a monthly cross-functional process that reconciles the demand plan with a constrained supply plan and the financial plan on a rolling horizon.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scd-production-1', nodeId: 'scd-production', type: 'oral', prompt: 'Explain how S&OP reconciles demand, supply, and financial plans.', passingCriteria: 'Student describes cross-functional alignment on a rolling horizon.', requiresHumanReview: true },
+      ],
+    },
+    {
+      id: 'scd-sourcing', courseId: 'scm-design', title: 'Sourcing & Procurement', estimatedHours: 9,
+      description: 'Supplier selection, contracts, and combinatorial auctions.',
+      prerequisites: ['scd-production'],
+      content: [
+        { type: 'text', content: 'Sourcing selects and contracts suppliers, balancing cost, risk, and flexibility. Combinatorial auctions let suppliers bid on bundles, capturing economies of scope.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scd-sourcing-1', nodeId: 'scd-sourcing', type: 'written', prompt: 'When is single sourcing preferable to multi-sourcing, and what is the risk?', passingCriteria: 'Student trades scale/relationship benefits against disruption risk.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'scd-finance', courseId: 'scm-design', title: 'Supply Chain Finance', estimatedHours: 8,
+      description: 'Cash-to-cash cycle, working capital, and the financial flow of the chain.',
+      prerequisites: ['scd-sourcing'],
+      content: [
+        { type: 'text', content: 'The cash-to-cash cycle (days inventory + days receivable − days payable) measures how long capital is tied up. Supply chain finance optimizes this alongside physical flow.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scd-finance-1', nodeId: 'scd-finance', type: 'problem_set', prompt: 'Compute the cash-to-cash cycle for DIO=60, DSO=45, DPO=30 days.', passingCriteria: 'Correct answer 75 days with the formula shown.', requiresHumanReview: false },
+      ],
+    },
+  ],
+};
+
+// --- SC Course 4: Supply Chain Dynamics (CTL.SC3x) -------------------------
+const scmDynamics: Course = {
+  id: 'scm-dynamics',
+  title: 'Supply Chain Dynamics',
+  mitEquivalent: 'MITx CTL.SC3x',
+  description:
+    'Supply chains as complex systems: feedback, the bullwhip effect, strategy, global flows, resilience, and sustainability.',
+  nodes: [
+    {
+      id: 'scy-systems', courseId: 'scm-dynamics', title: 'Complex Systems & System Dynamics', estimatedHours: 9,
+      description: 'Feedback loops, delays, and stocks and flows that drive supply chain behavior over time.',
+      prerequisites: ['scd-finance'],
+      content: [
+        { type: 'text', content: 'System dynamics models stocks, flows, feedback, and delays. Small local rules produce large non-intuitive system behavior — the heart of supply chain instability.' },
         { type: 'link', content: 'MITx CTL.SC3x — Supply Chain Dynamics.' },
       ],
       checkpoints: [
-        { id: 'cp-sc-dynamics-1', nodeId: 'sc-dynamics', type: 'written', prompt: 'Describe the bullwhip effect, name two causes, and give one mitigation.', passingCriteria: 'Student explains upstream amplification of demand variability, cites causes (e.g. order batching, forecast error), and a mitigation (e.g. information sharing).', requiresHumanReview: false },
-        { id: 'cp-sc-dynamics-2', nodeId: 'sc-dynamics', type: 'written', prompt: 'Contrast efficiency and resilience as supply chain strategies and when each is preferable.', passingCriteria: 'Student articulates the cost-vs-robustness trade-off with context-appropriate examples.', requiresHumanReview: true },
+        { id: 'cp-scy-systems-1', nodeId: 'scy-systems', type: 'written', prompt: 'Give an example of a feedback loop and a delay in a supply chain and their effect.', passingCriteria: 'Student identifies a real loop/delay and its destabilizing or stabilizing effect.', requiresHumanReview: false },
       ],
     },
     {
-      id: 'sc-technology',
-      courseId: 'supply-chain',
-      title: 'Supply Chain Technology & Systems',
-      description:
-        'The CRISP-DM data process, data modeling, machine learning in supply chains, warehouse optimization, and enterprise systems (WMS, TMS, APS, MPS) (MITx CTL.SC4x).',
-      prerequisites: ['sc-analytics'],
-      estimatedHours: 12,
+      id: 'scy-bullwhip', courseId: 'scm-dynamics', title: 'The Bullwhip Effect', estimatedHours: 9,
+      description: 'How demand variability amplifies upstream, its causes, and mitigations.',
+      prerequisites: ['scy-systems'],
       content: [
-        { type: 'text', content: 'Modern supply chains run on software and data. The CRISP-DM framework structures data projects; WMS, TMS, APS, and MPS systems execute warehouse, transportation, planning, and scheduling.' },
-        { type: 'text', content: 'Supervised and unsupervised machine learning power demand forecasting, anomaly detection, and segmentation. Tracking and traceability (barcodes, RFID, IoT) give visibility across the chain.' },
+        { type: 'text', content: 'The bullwhip effect is the upstream amplification of demand variability. Causes include order batching, forecast updating, price promotions, and rationing; information sharing and smaller batches dampen it.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scy-bullwhip-1', nodeId: 'scy-bullwhip', type: 'written', prompt: 'Describe the bullwhip effect, name two causes, and give one mitigation.', passingCriteria: 'Student explains upstream amplification, cites two causes, and a valid mitigation.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'scy-strategy', courseId: 'scm-dynamics', title: 'Supply Chain Strategy', estimatedHours: 8,
+      description: 'Aligning the chain with competitive strategy — efficiency vs responsiveness.',
+      prerequisites: ['scy-bullwhip'],
+      content: [
+        { type: 'text', content: 'Strategic fit matches supply chain design to the product and market: efficient chains for stable, cost-driven products; responsive chains for innovative, uncertain ones.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scy-strategy-1', nodeId: 'scy-strategy', type: 'written', prompt: 'Contrast an efficient and a responsive supply chain and when each fits.', passingCriteria: 'Student links product/demand uncertainty to the appropriate strategy.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'scy-global', courseId: 'scm-dynamics', title: 'International Supply Chains', estimatedHours: 8,
+      description: 'Global sourcing, trade, currency, and exogenous risk.',
+      prerequisites: ['scy-strategy'],
+      content: [
+        { type: 'text', content: 'Global chains add tariffs, currency risk, longer lead times, and geopolitical exposure, trading lower unit cost against higher variability and risk.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scy-global-1', nodeId: 'scy-global', type: 'written', prompt: 'Name two risks unique to international supply chains and how to hedge them.', passingCriteria: 'Student cites e.g. currency/geopolitical risk with a plausible hedge.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'scy-resilience', courseId: 'scm-dynamics', title: 'Resilience & Sustainability', estimatedHours: 8,
+      description: 'Designing for disruption and for environmental and social responsibility.',
+      prerequisites: ['scy-global'],
+      content: [
+        { type: 'text', content: 'Resilience buffers against disruption through redundancy and flexibility; sustainability reduces environmental and social impact. Both trade short-run cost for long-run robustness and license to operate.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scy-resilience-1', nodeId: 'scy-resilience', type: 'written', prompt: 'Contrast redundancy and flexibility as resilience strategies.', passingCriteria: 'Student distinguishes holding buffers vs the ability to reconfigure, with trade-offs.', requiresHumanReview: true },
+      ],
+    },
+  ],
+};
+
+// --- SC Course 5: Supply Chain Technology & Systems (CTL.SC4x) -------------
+const scmTechnology: Course = {
+  id: 'scm-technology',
+  title: 'Supply Chain Technology & Systems',
+  mitEquivalent: 'MITx CTL.SC4x',
+  description:
+    'The data and software that run modern supply chains: analytics processes, machine learning, warehousing, enterprise systems, and traceability.',
+  nodes: [
+    {
+      id: 'sct-crispdm', courseId: 'scm-technology', title: 'CRISP-DM & Data Modeling', estimatedHours: 8,
+      description: 'The CRISP-DM data-mining process and modeling supply chain data.',
+      prerequisites: ['sca-simulation'],
+      content: [
+        { type: 'text', content: 'CRISP-DM structures data projects in six phases: business understanding, data understanding, data preparation, modeling, evaluation, and deployment.' },
         { type: 'link', content: 'MITx CTL.SC4x — Supply Chain Technology and Systems.' },
       ],
       checkpoints: [
-        { id: 'cp-sc-technology-1', nodeId: 'sc-technology', type: 'written', prompt: 'Map a demand-forecasting project onto the six CRISP-DM phases.', passingCriteria: 'Student correctly orders business understanding, data understanding, data prep, modeling, evaluation, and deployment with supply-chain-relevant detail.', requiresHumanReview: false },
-        { id: 'cp-sc-technology-2', nodeId: 'sc-technology', type: 'written', prompt: 'Give one supervised and one unsupervised ML use case in a supply chain and the data each needs.', passingCriteria: 'Student names a valid supervised case (e.g. demand forecasting) and unsupervised case (e.g. supplier segmentation) with appropriate data.', requiresHumanReview: false },
+        { id: 'cp-sct-crispdm-1', nodeId: 'sct-crispdm', type: 'written', prompt: 'Map a demand-forecasting project onto the six CRISP-DM phases.', passingCriteria: 'Correct ordering and supply-chain-relevant detail for each phase.', requiresHumanReview: false },
       ],
     },
     {
-      id: 'sc-capstone',
-      courseId: 'supply-chain',
-      title: 'Supply Chain Capstone',
-      description:
-        'Integrate fundamentals, analytics, design, dynamics, and technology into an end-to-end supply chain analysis and recommendation.',
-      prerequisites: ['sc-design', 'sc-dynamics', 'sc-technology'],
-      estimatedHours: 16,
+      id: 'sct-ml', courseId: 'scm-technology', title: 'Machine Learning in Supply Chains', estimatedHours: 10,
+      description: 'Supervised and unsupervised learning for forecasting, segmentation, and anomaly detection.',
+      prerequisites: ['sct-crispdm'],
       content: [
-        { type: 'text', content: 'The capstone applies the full track to a realistic case: diagnose a supply chain, model the key decision analytically, and recommend a design or policy change with a cost/service justification.' },
+        { type: 'text', content: 'Supervised learning predicts (demand, lead time, risk) from labeled data; unsupervised learning finds structure (supplier or SKU segmentation, anomaly detection) without labels.' },
       ],
       checkpoints: [
-        { id: 'cp-sc-capstone-1', nodeId: 'sc-capstone', type: 'written', prompt: 'Write a supply chain analysis for a company of your choice: current state, the key decision, your model, and a recommendation with expected impact.', passingCriteria: 'A coherent analysis that applies at least two track concepts (e.g. inventory + network design) with a justified, quantified recommendation.', requiresHumanReview: true },
+        { id: 'cp-sct-ml-1', nodeId: 'sct-ml', type: 'written', prompt: 'Give one supervised and one unsupervised ML use case in a supply chain and the data each needs.', passingCriteria: 'Valid supervised (e.g. demand forecasting) and unsupervised (e.g. segmentation) cases with appropriate data.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'sct-warehouse', courseId: 'scm-technology', title: 'Warehouse Optimization', estimatedHours: 8,
+      description: 'Slotting, picking, and layout to maximize warehouse throughput.',
+      prerequisites: ['sct-ml'],
+      content: [
+        { type: 'text', content: 'Warehouse performance comes from good slotting (where SKUs sit), efficient picking paths, and layout. Small routing and slotting gains compound across millions of picks.' },
+      ],
+      checkpoints: [
+        { id: 'cp-sct-warehouse-1', nodeId: 'sct-warehouse', type: 'written', prompt: 'How does slotting fast-moving SKUs near the dock reduce picking cost?', passingCriteria: 'Student connects travel distance to picking labor and throughput.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'sct-systems', courseId: 'scm-technology', title: 'Enterprise Systems (WMS/TMS/APS/MPS)', estimatedHours: 8,
+      description: 'The software backbone that executes warehousing, transportation, planning, and scheduling.',
+      prerequisites: ['sct-warehouse'],
+      content: [
+        { type: 'text', content: 'A WMS runs the warehouse, a TMS manages transportation, an APS does advanced planning and scheduling, and an MPS sets the master production schedule — integrated through the ERP.' },
+      ],
+      checkpoints: [
+        { id: 'cp-sct-systems-1', nodeId: 'sct-systems', type: 'written', prompt: 'What does a TMS do that a WMS does not?', passingCriteria: 'Student distinguishes transportation planning/execution from warehouse operations.', requiresHumanReview: false },
+      ],
+    },
+    {
+      id: 'sct-tracking', courseId: 'scm-technology', title: 'Tracking & Traceability', estimatedHours: 7,
+      description: 'Barcodes, RFID, and IoT for end-to-end visibility.',
+      prerequisites: ['sct-systems'],
+      content: [
+        { type: 'text', content: 'Barcodes, RFID, and IoT sensors give real-time visibility and traceability, enabling recalls, authenticity checks, and exception management across the chain.' },
+      ],
+      checkpoints: [
+        { id: 'cp-sct-tracking-1', nodeId: 'sct-tracking', type: 'written', prompt: 'Give one advantage of RFID over barcodes and one cost of adopting it.', passingCriteria: 'Student cites no-line-of-sight/bulk reads vs tag/infrastructure cost.', requiresHumanReview: false },
+      ],
+    },
+  ],
+};
+
+// --- SC Course 6: Supply Chain Capstone (CTL.SCx Comprehensive) ------------
+const scmCapstone: Course = {
+  id: 'scm-capstone',
+  title: 'Supply Chain Capstone',
+  mitEquivalent: 'MITx CTL.SCx Comprehensive',
+  description:
+    'Integrate the full program into an end-to-end supply chain analysis, model, and recommendation.',
+  nodes: [
+    {
+      id: 'scc-scoping', courseId: 'scm-capstone', title: 'Capstone Scoping', estimatedHours: 8,
+      description: 'Framing a real supply chain problem, success metrics, and scope.',
+      prerequisites: ['scd-finance', 'scy-resilience', 'sct-tracking'],
+      content: [
+        { type: 'text', content: 'A strong capstone starts with a well-scoped problem: the decision, the metric (cost, service, cash), the data available, and the boundaries of the analysis.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scc-scoping-1', nodeId: 'scc-scoping', type: 'written', prompt: 'Write a one-page scope: the company, the supply chain decision, the metric, and the data you will use.', passingCriteria: 'Clear decision, measurable metric, and a realistic data plan.', requiresHumanReview: true },
+      ],
+    },
+    {
+      id: 'scc-analysis', courseId: 'scm-capstone', title: 'Analysis & Modeling', estimatedHours: 14,
+      description: 'Applying forecasting, inventory, optimization, or simulation to the capstone problem.',
+      prerequisites: ['scc-scoping'],
+      content: [
+        { type: 'text', content: 'Build the quantitative model that the decision needs — a forecast, an inventory policy, a network optimization, or a simulation — and validate it against the data.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scc-analysis-1', nodeId: 'scc-analysis', type: 'code', prompt: 'Submit your model (spreadsheet or code) with assumptions, inputs, and results.', passingCriteria: 'A reproducible model applying at least one core technique with documented assumptions.', requiresHumanReview: true },
+      ],
+    },
+    {
+      id: 'scc-recommendation', courseId: 'scm-capstone', title: 'Recommendation & Presentation', estimatedHours: 8,
+      description: 'Turning analysis into a justified, quantified recommendation and presenting it.',
+      prerequisites: ['scc-analysis'],
+      content: [
+        { type: 'text', content: 'Translate the model into a recommendation: what to change, the expected cost/service/cash impact, the risks, and an implementation path — communicated clearly to decision-makers.' },
+      ],
+      checkpoints: [
+        { id: 'cp-scc-recommendation-1', nodeId: 'scc-recommendation', type: 'oral', prompt: 'Present a 10-minute recommendation: problem, model, result, impact, and risks.', passingCriteria: 'Clear, quantified recommendation tied to the analysis and accessible to a mixed audience.', requiresHumanReview: true },
       ],
     },
   ],
@@ -1233,6 +1500,11 @@ export const mitCurriculum: DegreeGraph = {
     computerVision,
     mlSystems,
     capstone,
-    supplyChain,
+    scmFundamentals,
+    scmAnalytics,
+    scmDesign,
+    scmDynamics,
+    scmTechnology,
+    scmCapstone,
   ],
 };

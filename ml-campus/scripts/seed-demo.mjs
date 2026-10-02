@@ -108,20 +108,19 @@ const STUDENTS = [
     name: 'Sofia Nguyen',
     email: 'demo.sofia@byui.edu',
     degree: 'supply-chain',
-    background: 'First-year business student starting the supply chain track.',
+    background: 'First-year business student starting the supply chain degree.',
     goals: ['breadth'],
-    // Just starting supply chain: into fundamentals and analytics.
+    // Just starting: into fundamentals.
     knowledge: {
-      'sc-fundamentals': 3,
-      'sc-analytics': 2,
-      'sc-design': 1,
-      'sc-dynamics': 0,
-      'sc-technology': 0,
-      'sc-capstone': 0,
+      'scf-logistics': 3,
+      'scf-forecasting': 2,
+      'scf-eoq': 1,
+      'scf-safety-stock': 0,
+      'scf-transport': 0,
     },
     checkpoints: [
-      { id: 'cp-sc-fundamentals-1', passed: true, review: false, feedback: 'Correct EOQ and reorder point with formulas shown.' },
-      { id: 'cp-sc-fundamentals-2', passed: false, review: false, feedback: 'Explains holding cost but misses the service-level side of the trade-off.' },
+      { id: 'cp-scf-logistics-1', passed: true, review: false, feedback: 'Good grasp of the cost-vs-service trade-off.' },
+      { id: 'cp-scf-forecasting-1', passed: false, review: false, feedback: 'Smoothing recursion applied incorrectly after the first step.' },
     ],
   },
   {
@@ -130,19 +129,16 @@ const STUDENTS = [
     degree: 'supply-chain',
     background: 'Operations analyst moving into supply chain strategy.',
     goals: ['depth', 'career'],
-    // Solid fundamentals/analytics, into design and dynamics. Two flagged orals.
+    // Through fundamentals and analytics, into design. Two flagged reviews.
     knowledge: {
-      'sc-fundamentals': 4,
-      'sc-analytics': 3,
-      'sc-design': 2,
-      'sc-dynamics': 1,
-      'sc-technology': 1,
-      'sc-capstone': 0,
+      'scf-logistics': 4, 'scf-forecasting': 4, 'scf-eoq': 4, 'scf-safety-stock': 3, 'scf-transport': 3,
+      'sca-stats': 4, 'sca-regression': 3, 'sca-optimization': 2, 'sca-integer-opt': 1, 'sca-simulation': 1,
+      'scd-network': 1,
     },
     checkpoints: [
-      { id: 'cp-sc-fundamentals-1', passed: true, review: false, feedback: 'Strong inventory fundamentals.' },
-      { id: 'cp-sc-analytics-2', passed: false, review: true, feedback: 'Names simulation but does not justify when it beats a queuing formula. Needs human review.' },
-      { id: 'cp-sc-design-2', passed: false, review: true, feedback: 'Oral on S&OP is close but skips the financial reconciliation. Flagged for review.' },
+      { id: 'cp-scf-eoq-1', passed: true, review: false, feedback: 'Correct EOQ and order frequency.' },
+      { id: 'cp-sca-simulation-1', passed: false, review: true, feedback: 'Names simulation but does not justify when it beats a queuing formula. Needs human review.' },
+      { id: 'cp-scd-network-1', passed: false, review: true, feedback: 'Lists costs but does not resolve the facility-count decision. Flagged for review.' },
     ],
   },
 ];
@@ -150,8 +146,8 @@ const STUDENTS = [
 const SAMPLE_RESPONSES = {
   'cp-eigenvalues-2': 'Symmetric matrices are special because they mirror across the diagonal, so their eigenvectors end up perpendicular. I think it has to do with the spectral theorem but I am not totally sure how to prove the orthogonality part.',
   'cp-backpropagation-2': 'Backprop applies the chain rule from the loss backward. When you multiply lots of small derivatives together through many layers the gradient gets tiny, which is the vanishing gradient problem. ReLU helps because its derivative is 1 for positive inputs.',
-  'cp-sc-analytics-2': 'I would use simulation when the system is too complicated for a formula. Queuing formulas are faster but simulation can handle more detail, so I would simulate when there are lots of moving parts.',
-  'cp-sc-design-2': 'S&OP brings sales and operations together each month to agree on one plan. They look at the demand forecast and the supply capacity and settle on numbers everyone commits to.',
+  'cp-sca-simulation-1': 'I would use simulation when the system is too complicated for a formula. Queuing formulas are faster but simulation can handle more detail, so I would simulate when there are lots of moving parts.',
+  'cp-scd-network-1': 'Adding regional DCs lowers transportation cost and improves delivery speed, but it increases facility and inventory costs. You would add them if the savings beat the added cost.',
   default: 'Here is my worked solution with the steps shown as requested.',
 };
 
