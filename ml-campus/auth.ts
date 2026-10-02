@@ -4,6 +4,12 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from './lib/db/prisma';
 import bcrypt from 'bcryptjs';
 
+// On hosts that expose their public URL (e.g. Render's RENDER_EXTERNAL_URL),
+// use it for NextAuth callbacks when NEXTAUTH_URL isn't set explicitly.
+if (!process.env.NEXTAUTH_URL && process.env.RENDER_EXTERNAL_URL) {
+  process.env.NEXTAUTH_URL = process.env.RENDER_EXTERNAL_URL;
+}
+
 export const authOptions: NextAuthOptions = {
   // Fixed fallback secret so demo sessions survive server restarts without any
   // env setup. Override with NEXTAUTH_SECRET in production.

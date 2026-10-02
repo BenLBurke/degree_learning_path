@@ -1,0 +1,22 @@
+# Render Blueprint — deploys the ML Campus demo on the free tier.
+# Database: SQLite on the ephemeral filesystem, re-seeded on every boot
+# (demo content is always present; visitor-created data resets on restart/sleep).
+services:
+  - type: web
+    name: ml-campus
+    runtime: node
+    plan: free
+    rootDir: ml-campus
+    branch: claude/wonderful-pascal-k9nn0s
+    buildCommand: npm install --legacy-peer-deps && npx prisma generate && npm run build
+    # On each boot: create the DB schema, then seed the admin + demo students.
+    startCommand: npx prisma db push --accept-data-loss && node scripts/create-professor.mjs && node scripts/seed-demo.mjs && npm run start
+    envVars:
+      - key: DATABASE_URL
+        value: file:./dev.db
+      - key: ADMIN_EMAILS
+        value: admin@byui.edu
+      - key: NEXT_PUBLIC_ENABLE_COPILOT_SIDECAR
+        value: "false"
+      - key: NODE_VERSION
+        value: "20"
