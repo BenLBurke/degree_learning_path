@@ -3,6 +3,8 @@ import { reviewQueueByStudent } from '@/lib/admin/pending';
 import { getProgram, programNodeIds } from '@/lib/degree/programs';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function RosterPage() {
   const [students, allKnowledge, allCheckpoints, pendingByStudent] = await Promise.all([
     prisma.student.findMany({ orderBy: [{ degree: 'asc' }, { name: 'asc' }] }),

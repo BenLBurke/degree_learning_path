@@ -13,6 +13,8 @@ function findCheckpoint(checkpointId: string) {
   return null;
 }
 
+export const dynamic = 'force-dynamic';
+
 export default async function ReviewQueuePage() {
   // Flagged for human review, or agent-failed — newest first.
   const results = await prisma.checkpointResult.findMany({

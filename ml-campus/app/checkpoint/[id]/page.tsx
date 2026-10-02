@@ -12,6 +12,8 @@ interface Props {
   searchParams: { nodeId?: string };
 }
 
+export const dynamic = 'force-dynamic';
+
 export default async function CheckpointPage({ params, searchParams }: Props) {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect('/login');

@@ -3,6 +3,8 @@ import { getCurrentProfessor } from '@/lib/auth/roles';
 import { reviewQueueCount } from '@/lib/admin/pending';
 import AdminSidebar from '@/components/AdminSidebar';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const professor = await getCurrentProfessor();
   if (!professor) redirect('/dashboard');

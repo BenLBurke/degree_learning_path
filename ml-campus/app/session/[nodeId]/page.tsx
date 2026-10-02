@@ -12,6 +12,8 @@ interface Props {
   params: { nodeId: string };
 }
 
+export const dynamic = 'force-dynamic';
+
 export default async function SessionPage({ params }: Props) {
   const session = await getServerSession(authOptions);
   if (!session?.user) redirect('/login');

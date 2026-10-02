@@ -12,6 +12,8 @@ import BrandLogo from '@/components/BrandLogo';
 import { getCurrentProfessor } from '@/lib/auth/roles';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage({
   searchParams,
 }: {
